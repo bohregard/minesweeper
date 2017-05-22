@@ -5,12 +5,10 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -44,7 +42,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     private static final String TAG = MineSweeper.class.getSimpleName();
     private static final int COLUMN_COUNT = 12;
     private static final int ROW_COUNT = 18;
-    private static final int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .20);
+    private static final int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .15);
     //    private static final int MINES = (int) Math.floor((ROW_COUNT*ROW_COUNT)*.40);
     private static int[][] mineLocations;
 
