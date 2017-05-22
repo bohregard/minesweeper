@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "677419107622",
+    "firebase_url": "https://minesweeper-2c44a.firebaseio.com",
+    "project_id": "minesweeper-2c44a",
+    "storage_bucket": "minesweeper-2c44a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677419107622:android:0bf7c13a294a4614",
+        "android_client_info": {
+          "package_name": "com.bohregard.minesweeper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "677419107622-l9u6ql07uacc4ibgvnkn4qrsn8p09c1u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAP4tjdoIssId5xQl6CKWXpN5GnmqQvZ7w"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

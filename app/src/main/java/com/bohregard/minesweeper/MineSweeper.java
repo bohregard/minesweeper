@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -11,8 +14,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Chronometer;
 import android.widget.GridLayout;
 import android.widget.TextView;
@@ -21,6 +22,11 @@ import android.widget.Toast;
 import com.bohregard.minesweeper.util.AutoResizeTextView;
 import com.bohregard.minesweeper.util.SquareBoard;
 import com.bohregard.minesweeper.util.Utils;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 
 import java.util.Random;
 
@@ -28,6 +34,8 @@ import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 
 /**
  * todo: if no mines left, disable longclicking
+ * todo: full screen
+ * todo: back button
  * Created by awtod on 5/18/2017.
  */
 
@@ -45,19 +53,26 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     private static final int FLAG_SET = 40;
 
     private static int minesLeft;
+    private static long adTimeOut = 0;
 
     private SquareBoard squareBoard;
     private TextView minesLeftView;
     private Chronometer timeView;
+    private SoundPool sp;
+    private int clickSound;
+    private int flagSound;
+    private int mineSound;
 
     private SharedPreferences sharedPreferences;
+
+    private InterstitialAd interstitialAd;
 
     /*
     ******************************************************************************************
     *   Ratios
     ******************************************************************************************
      */
-    private static final float PIXEL_RATIO = (180f/299f);
+    private static final float PIXEL_RATIO = (180f / 299f);
 
 
     /*
@@ -70,31 +85,23 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mine_sweeper);
-        Utils.hideSystemUI(getWindow().getDecorView());
-        getWindow().addFlags(FLAG_KEEP_SCREEN_ON);
 
         sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             Log.d(TAG, "Saved instance restoring...");
         }
 
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        float ratio = ((float)metrics.widthPixels / (float)metrics.heightPixels);
-        Log.d(TAG, "Width: " + metrics.widthPixels);
-        Log.d(TAG, "Height: " + metrics.heightPixels);
-        Log.d(TAG, "Ratio: " + ratio);
-
-        if(PIXEL_RATIO == ratio) {
-            Log.d(TAG, "Pixel Ratio detected...");
-        }
-
+        setupAds();
+        buildSounds();
         setupBoard();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Utils.hideSystemUI(getWindow().getDecorView());
+        getWindow().addFlags(FLAG_KEEP_SCREEN_ON);
         timeView.start();
     }
 
@@ -121,9 +128,81 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
 
     /*
     ******************************************************************************************
+    *   Ad Methods
+    ******************************************************************************************
+     */
+
+    private void setupAds() {
+        MobileAds.initialize(getApplicationContext(), getString(R.string.banner_ad_unit_id));
+
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addTestDevice("A91891F9A4FC34214AD2B99ED921E03A")
+                .build();
+        mAdView.loadAd(adRequest);
+
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId(getString(R.string.inters_ad_unit_id));
+        interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                requestNewAd();
+            }
+
+            @Override
+            public void onAdFailedToLoad(int i) {
+                super.onAdFailedToLoad(i);
+                Log.e(TAG, "Failed to load ad...");
+            }
+
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                Log.d(TAG, "Ad Loaded");
+            }
+        });
+
+        requestNewAd();
+    }
+
+    private void requestNewAd() {
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addTestDevice("A91891F9A4FC34214AD2B99ED921E03A") //Pixel
+                .addTestDevice("2D54046DE254BD2B4FC1A8619316F2D4") //Samsung
+                .build();
+        interstitialAd.loadAd(adRequest);
+    }
+
+    private void showInterstitialAd() {
+        if (adTimeOut == 0) {
+            adTimeOut = System.currentTimeMillis();
+        }
+        Log.d(TAG, "Time: " + System.currentTimeMillis());
+
+        if (System.currentTimeMillis() - adTimeOut > (1000 * 60 * 5)) {
+            if (interstitialAd.isLoaded()) {
+                interstitialAd.show();
+            }
+            adTimeOut = System.currentTimeMillis();
+        }
+    }
+
+     /*
+    ******************************************************************************************
     *   Private Methods
     ******************************************************************************************
      */
+
+     private void buildSounds() {
+         sp = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
+         clickSound = sp.load(this, R.raw.click, 1);
+         flagSound = sp.load(this, R.raw.flag, 1);
+         mineSound = sp.load(this, R.raw.mine, 1);
+     }
 
     /**
      * Set the board configuration up. Generate an empty array and fill it with the amount of
@@ -137,7 +216,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         minesLeftView.setText(": " + minesLeft);
 
         // If the mineLocations are null, we need to build the board from scratch
-        if(mineLocations == null) {
+        if (mineLocations == null) {
             mineLocations = new int[ROW_COUNT][COLUMN_COUNT];
 
             int mineCount = 0;
@@ -168,6 +247,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
 
     /**
      * Instantiate
+     *
      * @param row
      * @param column
      */
@@ -190,6 +270,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         mine.setOnLongClickListener(this);
         mine.setTag(new int[]{row, column});
         mine.setId(getIndex(row, column));
+        mine.setSoundEffectsEnabled(false);
 
         if (mineLocations[row][column] != MINE) {
             search(row, column, MINE);
@@ -201,6 +282,9 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         squareBoard.addView(mine);
     }
 
+    /**
+     * Utility method to print the minelocations
+     */
     private void printArray() {
         for (int row = 0; row < ROW_COUNT; row++) {
             for (int column = 0; column < COLUMN_COUNT; column++) {
@@ -248,7 +332,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     }
 
     private void showSquare(AutoResizeTextView mine, int[] pos) {
-        Log.d(TAG, "Show the square at: " + pos[0] + ", " + pos[1]);
+        Log.v(TAG, "Show the square at: " + pos[0] + ", " + pos[1]);
         mine.setText("" + mineLocations[pos[0]][pos[1]]);
         mine.setTypeface(null, Typeface.BOLD);
         mine.setBackground(getDrawable(R.drawable.mine_clicked));
@@ -307,7 +391,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     private void toggleFlag(AutoResizeTextView mine) {
         if (mine.getText() == "F") {
             minesLeft += 1;
-            minesLeftView.setText("Mines Left: " + minesLeft);
+            minesLeftView.setText(": " + minesLeft);
             mine.setBackground(getDrawable(R.drawable.mine_unclicked));
             mine.setTextColor(getColor(R.color.transparent));
             int[] pos = (int[]) mine.getTag();
@@ -315,7 +399,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
             mine.setOnClickListener(this);
         } else {
             minesLeft -= 1;
-            minesLeftView.setText("Mines Left: " + minesLeft);
+            minesLeftView.setText(": " + minesLeft);
             mine.setBackground(getDrawable(R.drawable.mine_flag));
             mine.setText("F");
             mine.setTextColor(Color.parseColor("#00000000"));
@@ -361,6 +445,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
             timeView.stop();
             Toast.makeText(this, "Game WON! Time: " + timeView.getText(), Toast.LENGTH_SHORT).show();
             showBoard(null);
+            showInterstitialAd();
         } else {
             Log.e(TAG, "Game still has uncovered mines");
         }
@@ -388,17 +473,22 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
             Log.e(TAG, "Game Ends! Show the board...");
             timeView.stop();
             showBoard(pos);
+            sp.play(mineSound, 1, 1, 0, 0, 1);
+            showInterstitialAd();
         } else if (mineLocations[pos[0]][pos[1]] == 0) {
             search(pos[0], pos[1], 0);
-            printArray();
+            sp.play(clickSound, 1, 1, 0, 0, 1);
+//            printArray();
         } else {
             showSquare(mine, pos);
-            printArray();
+            sp.play(clickSound, 1, 1, 0, 0, 1);
+//            printArray();
         }
     }
 
     @Override
     public boolean onLongClick(View v) {
+        sp.play(flagSound, 1, 1, 0, 0, 1);
         toggleFlag((AutoResizeTextView) v);
         return true;
     }
