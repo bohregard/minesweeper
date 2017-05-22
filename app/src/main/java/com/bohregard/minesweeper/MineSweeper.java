@@ -6,14 +6,16 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.GridLayout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Chronometer;
-import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -98,7 +100,9 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     @Override
     protected void onResume() {
         super.onResume();
-        Utils.hideSystemUI(getWindow().getDecorView());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            Utils.hideSystemUI(getWindow().getDecorView());
+        }
         getWindow().addFlags(FLAG_KEEP_SCREEN_ON);
         timeView.start();
     }
@@ -195,12 +199,12 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     ******************************************************************************************
      */
 
-     private void buildSounds() {
-         sp = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
-         clickSound = sp.load(this, R.raw.click, 1);
-         flagSound = sp.load(this, R.raw.flag, 1);
-         mineSound = sp.load(this, R.raw.mine, 1);
-     }
+    private void buildSounds() {
+        sp = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
+        clickSound = sp.load(this, R.raw.click, 1);
+        flagSound = sp.load(this, R.raw.flag, 1);
+        mineSound = sp.load(this, R.raw.mine, 1);
+    }
 
     /**
      * Set the board configuration up. Generate an empty array and fill it with the amount of
@@ -262,7 +266,11 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         AutoResizeTextView mine = new AutoResizeTextView(this);
         mine.setTextSize(500);
         mine.setGravity(Gravity.CENTER);
-        mine.setBackground(getDrawable(R.drawable.mine_unclicked));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mine.setBackground(ContextCompat.getDrawable(this, R.drawable.mine_unclicked));
+        } else {
+            mine.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.mine_unclicked));
+        }
         mine.setLayoutParams(layoutParams);
         mine.setOnClickListener(this);
         mine.setOnLongClickListener(this);
@@ -274,7 +282,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
             search(row, column, MINE);
         } else {
             mine.setText("M");
-            mine.setTextColor(getColor(R.color.transparent));
+            mine.setTextColor(ContextCompat.getColor(this, R.color.transparent));
         }
 
         squareBoard.addView(mine);
@@ -333,12 +341,16 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         Log.v(TAG, "Show the square at: " + pos[0] + ", " + pos[1]);
         mine.setText("" + mineLocations[pos[0]][pos[1]]);
         mine.setTypeface(null, Typeface.BOLD);
-        mine.setBackground(getDrawable(R.drawable.mine_clicked));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mine.setBackground(ContextCompat.getDrawable(this, R.drawable.mine_clicked));
+        } else {
+            mine.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.mine_clicked));
+        }
         mine.setOnClickListener(null);
         mine.setOnLongClickListener(null);
         switch (mineLocations[pos[0]][pos[1]]) {
             case 0:
-                mine.setTextColor(getColor(R.color.transparent));
+                mine.setTextColor(ContextCompat.getColor(this, R.color.transparent));
                 break;
             case 1:
                 mine.setTextColor(Color.BLUE);
@@ -356,7 +368,11 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
                 mine.setTextColor(Color.parseColor("#DEB887"));
                 break;
             case MINE:
-                mine.setBackground(getDrawable(R.drawable.mine_border));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    mine.setBackground(ContextCompat.getDrawable(this, R.drawable.mine_border));
+                } else {
+                    mine.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.mine_border));
+                }
                 break;
         }
         mineLocations[pos[0]][pos[1]] = mineLocations[pos[0]][pos[1]] + MASK;
@@ -390,15 +406,23 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         if (mine.getText() == "F") {
             minesLeft += 1;
             minesLeftView.setText(": " + minesLeft);
-            mine.setBackground(getDrawable(R.drawable.mine_unclicked));
-            mine.setTextColor(getColor(R.color.transparent));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mine.setBackground(ContextCompat.getDrawable(this, R.drawable.mine_unclicked));
+            } else {
+                mine.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.mine_unclicked));
+            }
+            mine.setTextColor(ContextCompat.getColor(this, R.color.transparent));
             int[] pos = (int[]) mine.getTag();
             mine.setText("" + mineLocations[pos[0]][pos[1]]);
             mine.setOnClickListener(this);
         } else {
             minesLeft -= 1;
             minesLeftView.setText(": " + minesLeft);
-            mine.setBackground(getDrawable(R.drawable.mine_flag));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mine.setBackground(ContextCompat.getDrawable(this, R.drawable.mine_flag));
+            } else {
+                mine.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.mine_flag));
+            }
             mine.setText("F");
             mine.setTextColor(Color.parseColor("#00000000"));
             mine.setOnClickListener(null);
@@ -415,13 +439,21 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
             AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(i);
             int[] pos = (int[]) v.getTag();
             if (explodedMine == pos) {
-                v.setBackground(getDrawable(R.drawable.mine_exploded));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    v.setBackground(ContextCompat.getDrawable(this, R.drawable.mine_exploded));
+                } else {
+                    v.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.mine_exploded));
+                }
                 v.setOnClickListener(null);
                 v.setOnLongClickListener(null);
             } else if (mineLocations[pos[0]][pos[1]] == MINE && v.getText() == "F" || mineLocations[pos[0]][pos[1]] >= MASK) {
                 //do nothing
             } else if ((mineLocations[pos[0]][pos[1]] != MINE && v.getText() == "F")) {
-                v.setBackground(getDrawable(R.drawable.mine_wrong));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    v.setBackground(ContextCompat.getDrawable(this, R.drawable.mine_wrong));
+                } else {
+                    v.setBackgroundDrawable(ContextCompat.getDrawable(this, R.drawable.mine_wrong));
+                }
             } else {
                 showSquare(v, pos);
             }

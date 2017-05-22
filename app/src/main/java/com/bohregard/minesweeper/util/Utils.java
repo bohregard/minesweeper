@@ -1,5 +1,7 @@
 package com.bohregard.minesweeper.util;
 
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.View;
 
@@ -9,6 +11,7 @@ import android.view.View;
 
 public class Utils {
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public static void hideSystemUI(final View mDecorView) {
         // Set the IMMERSIVE flag.
         // Set the content to appear under the system bars so that the content
@@ -38,6 +41,7 @@ public class Utils {
 
     // This snippet shows the system bars. It does this by removing all the flags
     // except for the ones that make the content appear under the system bars.
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public static void showSystemUI(View mDecorView) {
         mDecorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
