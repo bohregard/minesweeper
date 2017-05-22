@@ -7,9 +7,12 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Chronometer;
 import android.widget.GridLayout;
 import android.widget.TextView;
@@ -17,8 +20,11 @@ import android.widget.Toast;
 
 import com.bohregard.minesweeper.util.AutoResizeTextView;
 import com.bohregard.minesweeper.util.SquareBoard;
+import com.bohregard.minesweeper.util.Utils;
 
 import java.util.Random;
+
+import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 
 /**
  * todo: if no mines left, disable longclicking
@@ -28,9 +34,9 @@ import java.util.Random;
 public class MineSweeper extends Activity implements View.OnClickListener, View.OnLongClickListener {
 
     private static final String TAG = MineSweeper.class.getSimpleName();
-    private static final int COLUMN_COUNT = 10;
-    private static final int ROW_COUNT = 10;
-    private static final int MINES = (int) Math.floor((ROW_COUNT * ROW_COUNT) * .20);
+    private static final int COLUMN_COUNT = 12;
+    private static final int ROW_COUNT = 18;
+    private static final int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .20);
     //    private static final int MINES = (int) Math.floor((ROW_COUNT*ROW_COUNT)*.40);
     private static int[][] mineLocations;
 
@@ -48,6 +54,14 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
 
     /*
     ******************************************************************************************
+    *   Ratios
+    ******************************************************************************************
+     */
+    private static final float PIXEL_RATIO = (180f/299f);
+
+
+    /*
+    ******************************************************************************************
     *   Activity Methods
     ******************************************************************************************
      */
@@ -56,11 +70,23 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mine_sweeper);
+        Utils.hideSystemUI(getWindow().getDecorView());
+        getWindow().addFlags(FLAG_KEEP_SCREEN_ON);
 
         sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
 
         if(savedInstanceState != null) {
             Log.d(TAG, "Saved instance restoring...");
+        }
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        float ratio = ((float)metrics.widthPixels / (float)metrics.heightPixels);
+        Log.d(TAG, "Width: " + metrics.widthPixels);
+        Log.d(TAG, "Height: " + metrics.heightPixels);
+        Log.d(TAG, "Ratio: " + ratio);
+
+        if(PIXEL_RATIO == ratio) {
+            Log.d(TAG, "Pixel Ratio detected...");
         }
 
         setupBoard();
@@ -92,6 +118,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         outState.putInt("Something", 1);
     }
 
+
     /*
     ******************************************************************************************
     *   Private Methods
@@ -107,7 +134,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         minesLeft = MINES;
 
         minesLeftView = (TextView) findViewById(R.id.mines_left);
-        minesLeftView.setText("Mines Left: " + minesLeft);
+        minesLeftView.setText(": " + minesLeft);
 
         // If the mineLocations are null, we need to build the board from scratch
         if(mineLocations == null) {
@@ -269,11 +296,12 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
     }
 
     private int getIndex(int row, int column) {
-        if (ROW_COUNT > COLUMN_COUNT) {
-            return row * ROW_COUNT + column;
-        } else {
-            return row * COLUMN_COUNT + column;
-        }
+//        if (ROW_COUNT > COLUMN_COUNT) {
+//            return row * ROW_COUNT + column;
+//        } else {
+//            return row * COLUMN_COUNT + column;
+//        }
+        return row * COLUMN_COUNT + column;
     }
 
     private void toggleFlag(AutoResizeTextView mine) {
