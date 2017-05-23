@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -168,17 +167,36 @@ public class MineSweeper extends Activity implements
     ******************************************************************************************
      */
 
+    /**
+     * Build the ad request
+     * @return adRequest
+     */
+    private AdRequest adBuilder() {
+        return new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addTestDevice("A91891F9A4FC34214AD2B99ED921E03A") // Pixel
+                .addTestDevice("B166285402A23C59DCF55A1F254983B6") // Pixel O Preview
+                .addTestDevice("2D54046DE254BD2B4FC1A8619316F2D4") // Samsung
+                .build();
+    }
+
+    /**
+     * Request a new interstitial ad
+     */
+    private void requestNewAd() {
+        AdRequest adRequest = adBuilder();
+        interstitialAd.loadAd(adRequest);
+    }
+
+    /**
+     * Setup the ads
+     */
     private void setupAds() {
         MobileAds.initialize(getApplicationContext(), getString(R.string.banner_ad_unit_id));
 
         AdView mAdView = (AdView) findViewById(R.id.adView);
 
-        AdRequest adRequest = new AdRequest.Builder()
-                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                .addTestDevice("A91891F9A4FC34214AD2B99ED921E03A")
-                .addTestDevice("B166285402A23C59DCF55A1F254983B6") //Pixel O Preview
-                .addTestDevice("2D54046DE254BD2B4FC1A8619316F2D4") //Samsung
-                .build();
+        AdRequest adRequest = adBuilder();
         mAdView.loadAd(adRequest);
 
         interstitialAd = new InterstitialAd(this);
@@ -206,16 +224,9 @@ public class MineSweeper extends Activity implements
         requestNewAd();
     }
 
-    private void requestNewAd() {
-        AdRequest adRequest = new AdRequest.Builder()
-                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
-                .addTestDevice("A91891F9A4FC34214AD2B99ED921E03A") //Pixel
-                .addTestDevice("B166285402A23C59DCF55A1F254983B6") //Pixel O Preview
-                .addTestDevice("2D54046DE254BD2B4FC1A8619316F2D4") //Samsung
-                .build();
-        interstitialAd.loadAd(adRequest);
-    }
-
+    /**
+     * Show an interstitial ad every 5 minutes based on the app activity
+     */
     private void showInterstitialAd() {
         if (adTimeOut == 0) {
             adTimeOut = System.currentTimeMillis();
