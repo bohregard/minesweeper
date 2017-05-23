@@ -2,6 +2,7 @@ package com.bohregard.minesweeper;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.AudioManager;
@@ -42,9 +43,9 @@ import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 public class MineSweeper extends Activity implements View.OnClickListener, View.OnLongClickListener {
 
     private static final String TAG = MineSweeper.class.getSimpleName();
-    private static final int COLUMN_COUNT = 12;
-    private static final int ROW_COUNT = 18;
-    private static final int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .15);
+    private static int COLUMN_COUNT = 12;
+    private static int ROW_COUNT = 18;
+    private static int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .15);
     //    private static final int MINES = (int) Math.floor((ROW_COUNT*ROW_COUNT)*.40);
     private static int[][] mineLocations;
 
@@ -94,6 +95,7 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
 
         setupAds();
         buildSounds();
+        buildBoard();
         setupBoard();
     }
 
@@ -204,6 +206,17 @@ public class MineSweeper extends Activity implements View.OnClickListener, View.
         clickSound = sp.load(this, R.raw.click, 1);
         flagSound = sp.load(this, R.raw.flag, 1);
         mineSound = sp.load(this, R.raw.mine, 1);
+    }
+
+    private void buildBoard() {
+        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+        if(tabletSize) {
+            COLUMN_COUNT = 20;
+            ROW_COUNT = 12;
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
     }
 
     /**
