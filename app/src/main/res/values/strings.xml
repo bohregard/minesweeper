@@ -1,5 +1,9 @@
 <resources>
+    <string name="app_id">677419107622</string>
     <string name="app_name">Minesweeper</string>
+
+    <string name="mine_text">%1$d</string>
+    <string name="mines_left">: %1$d</string>
 
     <string name="banner_ad_unit_id">ca-app-pub-8564173930088852/7029264523</string>
     <string name="inters_ad_unit_id">ca-app-pub-8564173930088852/2459464128</string>

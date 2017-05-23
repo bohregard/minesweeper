@@ -3,20 +3,44 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
+    signingConfigs {
+        config {
+            /*************************************************************************************************\
+             /*DO NOT EDIT THIS!!! INSTEAD REFER TO YOUR GRADLE.PROPERTIES FILE and put the following in below \
+             /*************************************************************************************************\
+
+             KEY_ALIAS=ouralias
+             KEY_PASSWORD=ourpassword
+             STORE_FILE=path/to/your/key
+             STORE_PASSWORD=storepassword
+
+             */
+
+            keyAlias KEY_ALIAS
+            keyPassword KEY_PASSWORD
+            storeFile file(STORE_FILE)
+            storePassword STORE_PASSWORD
+        }
+    }
+
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "com.bohregard.minesweeper"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "0.1v2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.config
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
 }
@@ -31,5 +55,6 @@ dependencies {
     compile 'com.android.support:gridlayout-v7:25.3.1'
 
     compile 'com.google.firebase:firebase-ads:10.2.4'
+    compile 'com.google.android.gms:play-services-games:10.2.4'
     testCompile 'junit:junit:4.12'
 }
