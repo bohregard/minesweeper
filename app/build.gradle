@@ -2,24 +2,17 @@ apply plugin: 'com.android.application'
 
 apply plugin: 'kotlin-android'
 
+def propsFile = rootProject.file('key.properties')
+def props = new Properties()
+props.load(new FileInputStream(propsFile))
+
 android {
     signingConfigs {
         config {
-            /*************************************************************************************************\
-             /*DO NOT EDIT THIS!!! INSTEAD REFER TO YOUR GRADLE.PROPERTIES FILE and put the following in below \
-             /*************************************************************************************************\
-
-             KEY_ALIAS=ouralias
-             KEY_PASSWORD=ourpassword
-             STORE_FILE=path/to/your/key
-             STORE_PASSWORD=storepassword
-
-             */
-
-            keyAlias KEY_ALIAS
-            keyPassword KEY_PASSWORD
-            storeFile file(STORE_FILE)
-            storePassword STORE_PASSWORD
+            storeFile file(props['STORE_FILE'])
+            storePassword props['STORE_PASSWORD']
+            keyAlias props['KEY_ALIAS']
+            keyPassword props['KEY_PASSWORD']
         }
     }
 
