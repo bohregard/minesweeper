@@ -36,19 +36,6 @@ android {
             signingConfig signingConfigs.config
         }
     }
-    flavorDimensions "ad"
-    productFlavors {
-        ad {
-            applicationIdSuffix ".ad"
-            versionNameSuffix "-ad"
-            dimension "ad"
-        }
-        full {
-            applicationIdSuffix ".full"
-            versionNameSuffix "-full"
-            dimension "ad"
-        }
-    }
 }
 
 dependencies {

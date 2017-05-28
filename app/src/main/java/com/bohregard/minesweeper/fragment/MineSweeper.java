@@ -1,8 +1,6 @@
 package com.bohregard.minesweeper.fragment;
 
 import android.app.Fragment;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.AudioManager;
@@ -31,8 +29,6 @@ import com.google.android.gms.games.Games;
 
 import java.util.Random;
 
-import static android.content.Context.MODE_PRIVATE;
-
 /**
  * Created by bohregard on 5/28/2017.
  */
@@ -42,36 +38,6 @@ public class MineSweeper extends Fragment implements
         View.OnLongClickListener {
 
     private static final String TAG = MineSweeper.class.getSimpleName();
-    private static int COLUMN_COUNT = 18;
-    private static int ROW_COUNT = 12;
-    private static int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .01);
-    //    private static final int MINES = (int) Math.floor((ROW_COUNT*ROW_COUNT)*.40);
-    private static int[][] mineLocations;
-    private static boolean configChange = false;
-
-    private static final int MINE = 10;
-    private static final int MASK = 20;
-    private static final int FLAG_SET = 40;
-
-    private static int minesLeft;
-
-    private SquareBoard squareBoard;
-    private TextView minesLeftView;
-    private Chronometer timeView;
-    private SoundPool sp;
-    private int clickSound;
-    private int flagSound;
-    private int mineSound;
-
-    private SharedPreferences sharedPreferences;
-
-    /*
-     ******************************************************************************************
-     *   Ratios
-     ******************************************************************************************
-     */
-    private static final float PIXEL_RATIO = (180f / 299f);
-
 
     /*
      ******************************************************************************************
@@ -88,59 +54,43 @@ public class MineSweeper extends Fragment implements
             @Override
             public void onClick(View v) {
                 squareBoard.removeAllViews();
+                timeView.stop();
                 timeView.setBase(SystemClock.elapsedRealtime());
-                mineLocations = null;
+                gameBoardArray = null;
                 setupBoard();
             }
         });
-        return v;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        super.onCreate(savedInstanceState);
-
-        sharedPreferences = getActivity().getSharedPreferences("sharedPrefs", MODE_PRIVATE);
-
-        if (savedInstanceState != null) {
-            Log.d(TAG, "Saved instance restoring...");
-        }
+        squareBoard = (SquareBoard) v.findViewById(R.id.grid);
+        timeView = (Chronometer) v.findViewById(R.id.time);
+        minesLeftView = (TextView) v.findViewById(R.id.mines_left);
 
         buildSounds();
-        buildBoard();
         setupBoard();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        timeView.start();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        timeView.stop();
-        Log.d(TAG, "On Pause");
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        Log.d(TAG, "New Configuration!");
-        configChange = true;
-        squareBoard.removeAllViews();
-
-        printArray();
-        setupBoard();
+        return v;
     }
 
     /*
      ******************************************************************************************
-     *   Private Methods
+     *   Game Board Methods
      ******************************************************************************************
      */
+
+    private SquareBoard squareBoard;
+    private Chronometer timeView;
+    private TextView minesLeftView;
+    private int[] gameBoardArray = null;
+    private int minesLeft = 0;
+    private SoundPool sp;
+    private int clickSound;
+    private int flagSound;
+    private int mineSound;
+
+    private static final int COLUMN_COUNT = 4;
+    private static final int ROW_COUNT = 4;
+    private final int MINE_MASK = 10;
+    private final int FLAG_MASK = 11;
+    private final int MASK = 30;
+    private final int NUM_MINES = 2;
 
     /**
      * Use a sound pool to build our sounds so that we can play multiple sounds without issues
@@ -153,45 +103,24 @@ public class MineSweeper extends Fragment implements
     }
 
     /**
-     * We build the board based off of configuration and settings
-     */
-    private void buildBoard() {
-        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
-        Log.e(TAG, "isTablet: " + tabletSize);
-        if (tabletSize) {
-            COLUMN_COUNT = 20;
-            ROW_COUNT = 12;
-            //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else {
-            COLUMN_COUNT = 12;
-            ROW_COUNT = 20;
-            //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-    }
-
-    /**
      * Set the board configuration up. Generate an empty array and fill it with the amount of
      * mines set. Shuffle the mines, and calculate the board numbers.
      */
     private void setupBoard() {
-        squareBoard = (SquareBoard) getActivity().findViewById(R.id.grid);
-        minesLeftView = (TextView) getActivity().findViewById(R.id.mines_left);
+        //TextView minesLeftView = (TextView) getActivity().findViewById(R.id.mines_left);
 
-        minesLeft = MINES;
-        setMineLeftText(minesLeft);
+        // If the boardArray are null, we need to build the board from scratch
+        if (gameBoardArray == null) {
+            gameBoardArray = new int[ROW_COUNT * COLUMN_COUNT];
 
-        // If the mineLocations are null, we need to build the board from scratch
-        if (mineLocations == null) {
-            mineLocations = new int[ROW_COUNT][COLUMN_COUNT];
-
-            for (int i = 0; i < ROW_COUNT; i++) {
-                for (int j = 0; j < COLUMN_COUNT; j++) {
-                    if (getIndex(i, j) < MINES) {
-                        mineLocations[i][j] = MINE;
-                    }
+            for (int i = 0; i < ROW_COUNT * COLUMN_COUNT; i++) {
+                if (i < NUM_MINES) {
+                    gameBoardArray[i] = MINE_MASK;
                 }
             }
-            shuffle(mineLocations);
+            minesLeft = NUM_MINES;
+            setMineLeftText(minesLeft);
+            shuffle(gameBoardArray);
         }
 
         squareBoard.setRowCount(ROW_COUNT);
@@ -200,25 +129,20 @@ public class MineSweeper extends Fragment implements
         for (int row = 0; row < ROW_COUNT; row++) {
             for (int column = 0; column < COLUMN_COUNT; column++) {
                 setupChildView(row, column);
+                if (gameBoardArray[getIndex(row, column)] != MINE_MASK) {
+                    mineSearch(row, column, MINE_MASK);
+                }
             }
         }
-
-        //todo change this to when the user presses the board
-        timeView = (Chronometer) getActivity().findViewById(R.id.time);
-        timeView.start();
-        configChange = false;
     }
 
     /**
-     * Instantiate each view
+     * Setup the individual squares
      *
-     * @param row    integer
-     * @param column integer
+     * @param row    int
+     * @param column int
      */
     private void setupChildView(int row, int column) {
-        Log.v(TAG, "CURRENT CENTER: " + row + ", " + column);
-        Log.v(TAG, "Mine? " + mineLocations[row][column]);
-
         GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
         layoutParams.height = 0;
         layoutParams.width = 0;
@@ -236,118 +160,286 @@ public class MineSweeper extends Fragment implements
         mine.setId(getIndex(row, column));
         mine.setSoundEffectsEnabled(false);
 
-        if (!configChange) {
-            if (mineLocations[row][column] != MINE) {
-                search(row, column, MINE);
-            } else {
-                mine.setText("M");
-                mine.setTextColor(ContextCompat.getColor(getActivity(), R.color.transparent));
-            }
-        }
-
-        if (mineLocations[row][column] >= MASK) {
-            showSquare(mine, new int[]{row, column});
-        }
-
         squareBoard.addView(mine);
     }
 
-    private void search(int row, int column, int searchParam) {
+    private void mineSearch(int row, int column, int searchParam) {
         int startPosX = (row - 1 < 0) ? row : row - 1;
         int startPosY = (column - 1 < 0) ? column : column - 1;
         int endPosX = (row + 1 >= ROW_COUNT) ? row : row + 1;
         int endPosY = (column + 1 >= COLUMN_COUNT) ? column : column + 1;
 
-        Log.v(TAG, "Start: " + startPosX + ", " + startPosY);
-        Log.v(TAG, "End: " + endPosX + ", " + endPosY);
-
         for (int rowNum = startPosX; rowNum <= endPosX; rowNum++) {
             for (int colNum = startPosY; colNum <= endPosY; colNum++) {
-                // All the neighbors will be grid[rowNum][colNum]
-                if (searchParam == 0) {
-                    if (mineLocations[rowNum][colNum] == searchParam) {
-                        AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(getIndex(rowNum, colNum));
-                        if (v.getText() == ("F") || v.getText() == "" || v.getText() == null) {
-                            showSquare(v, new int[]{rowNum, colNum});
-                            search(rowNum, colNum, 0);
-                        }
-                    } else {
-                        AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(getIndex(rowNum, colNum));
-                        if (v.getText() == "" || v.getText() == null) {
-                            showSquare(v, new int[]{rowNum, colNum});
-                        }
-                    }
-                } else {
-                    Log.v(TAG, "loc: " + rowNum + ", " + colNum);
-                    if (mineLocations[rowNum][colNum] == searchParam) {
-                        mineLocations[row][column] += 1;
-                    }
+                if (gameBoardArray[getIndex(rowNum, colNum)] == searchParam) {
+                    gameBoardArray[getIndex(row, column)] += 1;
                 }
             }
         }
     }
 
-    private void showSquare(AutoResizeTextView mine, int[] pos) {
-        if (!configChange) {
-            setMineText(mine, mineLocations[pos[0]][pos[1]]);
-            mineLocations[pos[0]][pos[1]] = mineLocations[pos[0]][pos[1]] + MASK;
-        } else {
-            setMineText(mine, mineLocations[pos[0]][pos[1]] - MASK);
+    private void zeroReveal(int row, int column) {
+        int startPosX = (row - 1 < 0) ? row : row - 1;
+        int startPosY = (column - 1 < 0) ? column : column - 1;
+        int endPosX = (row + 1 >= ROW_COUNT) ? row : row + 1;
+        int endPosY = (column + 1 >= COLUMN_COUNT) ? column : column + 1;
+
+        for (int rowNum = startPosX; rowNum <= endPosX; rowNum++) {
+            for (int colNum = startPosY; colNum <= endPosY; colNum++) {
+                AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(getIndex(rowNum, colNum));
+                if (gameBoardArray[getIndex(rowNum, colNum)] == 0) {
+                    showSquare(v, getIndex(rowNum, colNum));
+                    zeroReveal(rowNum, colNum);
+                } else if (gameBoardArray[getIndex(rowNum, colNum)] < 10) {
+                    showSquare(v, getIndex(rowNum, colNum));
+
+                }
+            }
         }
-        Log.v(TAG, "Show the square at: " + pos[0] + ", " + pos[1]);
+    }
+
+    private void showSquare(AutoResizeTextView mine, int index) {
+        gameBoardArray[index] += MASK;
+        setMineText(mine, gameBoardArray[index]);
+        mine.setTextSize(500);
         mine.setTypeface(null, Typeface.BOLD);
         setViewBackgroundDrawable(mine, R.drawable.mine_clicked);
         mine.setOnClickListener(null);
         mine.setOnLongClickListener(null);
-        switch (mineLocations[pos[0]][pos[1]]) {
+
+        switch (gameBoardArray[index]) {
             case 0:
-            case 20:
+            case MASK:
                 mine.setTextColor(ContextCompat.getColor(getActivity(), R.color.transparent));
                 break;
             case 1:
-            case 21:
+            case 1 + MASK:
                 mine.setTextColor(Color.BLUE);
                 break;
             case 2:
-            case 22:
+            case 2 + MASK:
                 mine.setTextColor(Color.GREEN);
                 break;
             case 3:
-            case 23:
+            case 3 + MASK:
                 mine.setTextColor(Color.RED);
                 break;
             case 4:
-            case 24:
+            case 4 + MASK:
                 mine.setTextColor(Color.parseColor("#000099"));
                 break;
             case 5:
-            case 25:
+            case 5 + MASK:
                 mine.setTextColor(Color.parseColor("#DEB887"));
                 break;
-            case MINE:
-            case MINE + MASK:
+            case MINE_MASK:
+            case MINE_MASK + MASK:
+                mine.setTextColor(ContextCompat.getColor(getActivity(), R.color.transparent));
                 setViewBackgroundDrawable(mine, R.drawable.mine_border);
                 break;
         }
     }
 
+    private void showBoard(int index) {
+        for (int i = 0; i < COLUMN_COUNT * ROW_COUNT; i++) {
+            AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(i);
+            int[] pos = (int[]) v.getTag();
+            int value = gameBoardArray[i];
+            if (value <= MASK) {
+                if (index == i) {
+                    setViewBackgroundDrawable(v, R.drawable.mine_exploded);
+                    v.setOnClickListener(null);
+                    v.setOnLongClickListener(null);
+                } else if (value > MINE_MASK && value < MINE_MASK + FLAG_MASK) {
+                    setViewBackgroundDrawable(v, R.drawable.mine_wrong);
+                    achievementUnlock(R.string.achievement_not_quite_a_mine);
+                } else if (value != MINE_MASK + FLAG_MASK) {
+                    showSquare(v, getIndex(pos));
+                }
+            }
+        }
+    }
+
+    /*
+     ******************************************************************************************
+     *   Game Methods
+     ******************************************************************************************
+     */
+
+    private void gameLose(int index) {
+        Log.e(TAG, "Game Ends! Show the board...");
+        timeView.stop();
+        achievementUnlock(R.string.achievement_babys_first_mine);
+        if(checkBoard() > 0) {
+            achievementIncrement(R.string.achievement_flagged_10_mines, checkBoard());
+        }
+        showBoard(index);
+        Main.showInterstitialAd();
+    }
+
+    private void gameWin() {
+        timeView.stop();
+
+        achievementUnlock(R.string.achievement_a_whole_new_world);
+        achievementIncrement(R.string.achievement_baby_bomb_sweeper, 1);
+        achievementIncrement(R.string.achievement_amateur_bomb_analyst, 1);
+        achievementIncrement(R.string.achievement_junior_bomb_detective, 1);
+        achievementIncrement(R.string.achievement_bomb_senpai, 1);
+        achievementIncrement(R.string.achievement_flagged_10_mines, NUM_MINES);
+
+        Log.d(TAG, "Time: " + (SystemClock.elapsedRealtime() - timeView.getBase()));
+        if (SystemClock.elapsedRealtime() - timeView.getBase() < 60000) {
+            achievementUnlock(R.string.achievement_fast_sweeper);
+        }
+        Toast.makeText(getActivity(),
+                "Game WON! Time: " + timeView.getText(),
+                Toast.LENGTH_SHORT).show();
+        showBoard(100);
+        Main.showInterstitialAd();
+    }
+
+    private int checkBoard() {
+        int count = 0;
+        for (int i = 0; i < ROW_COUNT * COLUMN_COUNT; i++) {
+            if(gameBoardArray[i] == MINE_MASK + FLAG_MASK) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    //todo, Refactor flag toggling
+    private void toggleFlag(AutoResizeTextView mine) {
+
+        int[] pos = (int[]) mine.getTag();
+        int value = gameBoardArray[getIndex(pos)];
+
+        if (value >= 11 && value <= 21) {
+            minesLeft += 1;
+            setMineLeftText(minesLeft);
+            setViewBackgroundDrawable(mine, R.drawable.mine_unclicked);
+            mine.setTextColor(ContextCompat.getColor(getActivity(), R.color.transparent));
+            setMineText(mine, gameBoardArray[getIndex(pos)]);
+            gameBoardArray[getIndex(pos)] = value - FLAG_MASK;
+            mine.setOnClickListener(this);
+        } else {
+            minesLeft -= 1;
+            setMineLeftText(minesLeft);
+            setViewBackgroundDrawable(mine, R.drawable.mine_flag);
+            gameBoardArray[getIndex(pos)] = value + FLAG_MASK;
+            mine.setOnClickListener(null);
+            if (minesLeft == 0) {
+                //check board
+                Log.d(TAG, "NO MINES LEFT");
+                if(checkBoard() == NUM_MINES) {
+                    gameWin();
+                }
+            }
+        }
+    }
+
+    /*
+     ******************************************************************************************
+     *   Click Methods
+     ******************************************************************************************
+     */
+
+    @Override
+    public void onClick(View v) {
+        timeView.start();
+        AutoResizeTextView mine = (AutoResizeTextView) v;
+        int[] pos = (int[]) v.getTag();
+        int value = gameBoardArray[getIndex(pos)];
+        Log.d(TAG, "Value: " + value);
+        switch (value) {
+            case MINE_MASK:
+                gameLose(getIndex(pos));
+                sp.play(mineSound, 1, 1, 0, 0, 1);
+                break;
+            case 0:
+                zeroReveal(pos[0], pos[1]);
+                sp.play(clickSound, 1, 1, 0, 0, 1);
+                break;
+            default:
+                showSquare(mine, getIndex(pos));
+                sp.play(clickSound, 1, 1, 0, 0, 1);
+                break;
+        }
+        printArray();
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        toggleFlag((AutoResizeTextView) v);
+        sp.play(flagSound, 1, 1, 0, 0, 1);
+        return true;
+    }
+
+    /*
+     ******************************************************************************************
+     *   Game Board Utility Methods
+     ******************************************************************************************
+     */
+
+    /**
+     * Utility method to set a background drawable
+     *
+     * @param view       view
+     * @param drawableId int
+     */
+    private void setViewBackgroundDrawable(View view, int drawableId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            view.setBackground(ContextCompat.getDrawable(getActivity(), drawableId));
+        } else {
+            view.setBackgroundDrawable(ContextCompat.getDrawable(getActivity(), drawableId));
+        }
+    }
+
+    /**
+     * Sets the TextView text
+     *
+     * @param view view
+     * @param num  int
+     */
+    private void setMineText(TextView view, int num) {
+        if (num - MASK > 0) {
+            num = num - MASK;
+        }
+        view.setText(
+                String.format(
+                        getString(R.string.mine_text),
+                        num)
+        );
+    }
+
+    /**
+     * Set the amount of mines remaining. This may not be accurate since the user can place mines
+     * where ever.
+     *
+     * @param minesLeft int
+     */
+    private void setMineLeftText(int minesLeft) {
+        minesLeftView.setText(
+                String.format(
+                        getString(R.string.mines_left),
+                        minesLeft)
+        );
+    }
+
     /**
      * Utility method to shuffle the array
      *
-     * @param a 2d array
+     * @param a array
      */
-    private void shuffle(int[][] a) {
+    private void shuffle(int[] a) {
         Random random = new Random();
 
         for (int i = a.length - 1; i > 0; i--) {
-            for (int j = a[i].length - 1; j > 0; j--) {
-                int m = random.nextInt(i + 1);
-                int n = random.nextInt(j + 1);
-
-                int temp = a[i][j];
-                a[i][j] = a[m][n];
-                a[m][n] = temp;
-            }
+            int m = random.nextInt(i + 1);
+            int temp = a[i];
+            a[i] = a[m];
+            a[m] = temp;
         }
     }
 
@@ -359,120 +451,28 @@ public class MineSweeper extends Fragment implements
      * @return an index integer
      */
     private int getIndex(int row, int column) {
+        //Log.d(TAG, "Index: " + row * COLUMN_COUNT + column);
         return row * COLUMN_COUNT + column;
     }
 
-    private void toggleFlag(AutoResizeTextView mine) {
-        if (mine.getText() == "F") {
-            minesLeft += 1;
-            setMineLeftText(minesLeft);
-            setViewBackgroundDrawable(mine, R.drawable.mine_unclicked);
-            mine.setTextColor(ContextCompat.getColor(getActivity(), R.color.transparent));
-            int[] pos = (int[]) mine.getTag();
-            setMineText(mine, mineLocations[pos[0]][pos[1]]);
-            mine.setOnClickListener(this);
-        } else {
-            minesLeft -= 1;
-            setMineLeftText(minesLeft);
-            setViewBackgroundDrawable(mine, R.drawable.mine_flag);
-            mine.setText("F");
-            mine.setTextColor(Color.parseColor("#00000000"));
-            mine.setOnClickListener(null);
-            if (minesLeft == 0) {
-                //check board
-                Log.d(TAG, "NO MINES LEFT");
-                checkBoard();
-            }
-        }
-    }
-
-    private void showBoard(int[] explodedMine) {
-        for (int i = 0; i < COLUMN_COUNT * ROW_COUNT; i++) {
-            AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(i);
-            int[] pos = (int[]) v.getTag();
-            int mineLocation = mineLocations[pos[0]][pos[1]];
-            if (explodedMine == pos) {
-                setViewBackgroundDrawable(v, R.drawable.mine_exploded);
-                v.setOnClickListener(null);
-                v.setOnLongClickListener(null);
-            } else if ((mineLocation != MINE && v.getText() == "F")) {
-                setViewBackgroundDrawable(v, R.drawable.mine_wrong);
-                achievementUnlock(R.string.achievement_not_quite_a_mine);
-            } else if (!(mineLocation == MINE &&
-                    v.getText() == "F" ||
-                    mineLocation >= MASK)) {
-                showSquare(v, pos);
-            }
-        }
-    }
-
-    private void checkBoard() {
-        int count = 0;
-        for (int i = 0; i < COLUMN_COUNT * ROW_COUNT; i++) {
-            AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(i);
-            int[] pos = (int[]) v.getTag();
-            if (mineLocations[pos[0]][pos[1]] == MINE && v.getText() == "F") {
-                Log.d(TAG, "Mine success...");
-                count++;
-            }
-        }
-        if (count == MINES) {
-            Log.d(TAG, "GAME WON!");
-            achievementUnlock(R.string.achievement_a_whole_new_world);
-            achievementIncrement(R.string.achievement_baby_bomb_sweeper, 1);
-            achievementIncrement(R.string.achievement_amateur_bomb_analyst, 1);
-            achievementIncrement(R.string.achievement_junior_bomb_detective, 1);
-            achievementIncrement(R.string.achievement_bomb_senpai, 1);
-            achievementIncrement(R.string.achievement_flagged_10_mines, MINES);
-            Log.d(TAG, "Time: " + (SystemClock.elapsedRealtime() - timeView.getBase()));
-            if (SystemClock.elapsedRealtime() - timeView.getBase() < 60000) {
-                achievementUnlock(R.string.achievement_fast_sweeper);
-            }
-            timeView.stop();
-            Toast.makeText(getActivity(),
-                    "Game WON! Time: " + timeView.getText(),
-                    Toast.LENGTH_SHORT).show();
-            showBoard(null);
-            Main.showInterstitialAd();
-        } else {
-            Log.e(TAG, "Game still has uncovered mines");
-        }
+    private int getIndex(int[] pos) {
+        return pos[0] * COLUMN_COUNT + pos[1];
     }
 
     /**
      * Utility method to print the minelocations
      */
     private void printArray() {
-        for (int row = 0; row < ROW_COUNT; row++) {
-            for (int column = 0; column < COLUMN_COUNT; column++) {
-                Log.i(TAG + "_MINELOCATIONS", "MINESLOCATIONS: " + mineLocations[row][column]);
-            }
+        for (int i = 0; i < ROW_COUNT * COLUMN_COUNT; i++) {
+            Log.i(TAG + "_MINELOCATIONS", "BOARD_ARRAY: " + gameBoardArray[i]);
         }
     }
 
-    private void setMineLeftText(int minesLeft) {
-        minesLeftView.setText(
-                String.format(
-                        getString(R.string.mines_left),
-                        minesLeft)
-        );
-    }
-
-    private void setMineText(TextView view, int num) {
-        view.setText(
-                String.format(
-                        getString(R.string.mine_text),
-                        num)
-        );
-    }
-
-    private void setViewBackgroundDrawable(View view, int drawableId) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.setBackground(ContextCompat.getDrawable(getActivity(), drawableId));
-        } else {
-            view.setBackgroundDrawable(ContextCompat.getDrawable(getActivity(), drawableId));
-        }
-    }
+    /*
+     ******************************************************************************************
+     *   Google Play Game Services Utility Methods
+     ******************************************************************************************
+     */
 
     private void achievementUnlock(int id) {
         if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
@@ -484,44 +484,5 @@ public class MineSweeper extends Fragment implements
         if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
             Games.Achievements.increment(Main.getGoogleApiClient(), getString(id), increment);
         }
-    }
-
-    /*
-     ******************************************************************************************
-     *   Public Methods
-     ******************************************************************************************
-     */
-
-    @Override
-    public void onClick(View v) {
-        AutoResizeTextView mine = (AutoResizeTextView) v;
-        int[] pos = (int[]) v.getTag();
-        Log.d(TAG, "Position: " +
-                pos[0] + ", " + pos[1] +
-                " with id: " + v.getId() +
-                " Mine Locations: " + mineLocations[pos[0]][pos[1]]);
-        if (mineLocations[pos[0]][pos[1]] == MINE) {
-            Log.e(TAG, "Game Ends! Show the board...");
-            timeView.stop();
-            showBoard(pos);
-            sp.play(mineSound, 1, 1, 0, 0, 1);
-            achievementUnlock(R.string.achievement_babys_first_mine);
-            Main.showInterstitialAd();
-        } else if (mineLocations[pos[0]][pos[1]] == 0) {
-            search(pos[0], pos[1], 0);
-            sp.play(clickSound, 1, 1, 0, 0, 1);
-            printArray();
-        } else {
-            showSquare(mine, pos);
-            sp.play(clickSound, 1, 1, 0, 0, 1);
-//            printArray();
-        }
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        sp.play(flagSound, 1, 1, 0, 0, 1);
-        toggleFlag((AutoResizeTextView) v);
-        return true;
     }
 }
