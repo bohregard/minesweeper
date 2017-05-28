@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.bohregard.minesweeper.fragment.MainMenu;
+import com.bohregard.minesweeper.fragment.MineSweeper;
 import com.bohregard.minesweeper.util.Utils;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -42,8 +44,9 @@ public class Main extends Activity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
+        getFragmentManager().beginTransaction()
+                .replace(R.id.fragment, new MainMenu(), null)
+                .commit();
 
         setupAds();
     }
@@ -61,6 +64,10 @@ public class Main extends Activity implements
     @Override
     protected void onStart() {
         super.onStart();
+        findViewById(R.id.sign_in_button).setOnClickListener(this);
+        findViewById(R.id.sign_out_button).setOnClickListener(this);
+        findViewById(R.id.start_game).setOnClickListener(this);
+        findViewById(R.id.settings).setOnClickListener(this);
 
         //todo check that the user does not want to sign in ever again...
         setupGameApi();
@@ -89,9 +96,9 @@ public class Main extends Activity implements
     }
 
     /*
-    ******************************************************************************************
-    *   Ad Methods
-    ******************************************************************************************
+     ******************************************************************************************
+     *   Ad Methods
+     ******************************************************************************************
      */
 
     /**
@@ -170,9 +177,9 @@ public class Main extends Activity implements
     }
 
     /*
-    ******************************************************************************************
-    *   Google Play Game Methods
-    ******************************************************************************************
+     ******************************************************************************************
+     *   Google Play Game Methods
+     ******************************************************************************************
      */
 
     private static GoogleApiClient googleApiClient;
@@ -252,6 +259,13 @@ public class Main extends Activity implements
                 googleApiClient.disconnect();
                 findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
                 findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+                break;
+            case R.id.start_game:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.fragment, new MineSweeper(), null)
+                        .commit();
+                break;
+            case R.id.settings:
                 break;
         }
     }

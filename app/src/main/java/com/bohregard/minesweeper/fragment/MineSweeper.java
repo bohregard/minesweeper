@@ -66,17 +66,17 @@ public class MineSweeper extends Fragment implements
     private SharedPreferences sharedPreferences;
 
     /*
-    ******************************************************************************************
-    *   Ratios
-    ******************************************************************************************
+     ******************************************************************************************
+     *   Ratios
+     ******************************************************************************************
      */
     private static final float PIXEL_RATIO = (180f / 299f);
 
 
     /*
-    ******************************************************************************************
-    *   Fragment Methods
-    ******************************************************************************************
+     ******************************************************************************************
+     *   Fragment Methods
+     ******************************************************************************************
      */
 
     @Nullable
@@ -137,9 +137,9 @@ public class MineSweeper extends Fragment implements
     }
 
     /*
-    ******************************************************************************************
-    *   Private Methods
-    ******************************************************************************************
+     ******************************************************************************************
+     *   Private Methods
+     ******************************************************************************************
      */
 
     /**
@@ -333,6 +333,7 @@ public class MineSweeper extends Fragment implements
 
     /**
      * Utility method to shuffle the array
+     *
      * @param a 2d array
      */
     private void shuffle(int[][] a) {
@@ -352,7 +353,8 @@ public class MineSweeper extends Fragment implements
 
     /**
      * Returns an index from the 2d array
-     * @param row integer
+     *
+     * @param row    integer
      * @param column integer
      * @return an index integer
      */
@@ -462,9 +464,9 @@ public class MineSweeper extends Fragment implements
     }
 
     /*
-    ******************************************************************************************
-    *   Public Methods
-    ******************************************************************************************
+     ******************************************************************************************
+     *   Public Methods
+     ******************************************************************************************
      */
 
     @Override
@@ -481,8 +483,9 @@ public class MineSweeper extends Fragment implements
             showBoard(pos);
             sp.play(mineSound, 1, 1, 0, 0, 1);
 
-            //todo if signed in
-            Games.Achievements.unlock(Main.getGoogleApiClient(), getString(R.string.babys_first_mine));
+            if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
+                Games.Achievements.unlock(Main.getGoogleApiClient(), getString(R.string.babys_first_mine));
+            }
             Main.showInterstitialAd();
         } else if (mineLocations[pos[0]][pos[1]] == 0) {
             search(pos[0], pos[1], 0);
