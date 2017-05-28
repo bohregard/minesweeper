@@ -29,6 +29,13 @@
         android:layout_margin="10dp"
         android:background="@drawable/mine_exploded" />
 
+    <ImageButton
+        android:id="@+id/leaderboards"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_margin="10dp"
+        android:background="@drawable/mine_flag" />
+
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"
         android:layout_width="wrap_content"

@@ -36,6 +36,7 @@ public class MainMenu extends Fragment implements View.OnClickListener {
 
         v.findViewById(R.id.start_game).setOnClickListener(this);
         v.findViewById(R.id.settings).setOnClickListener(this);
+        v.findViewById(R.id.leaderboards).setOnClickListener(this);
 
         if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
             signIn.setVisibility(View.GONE);
@@ -82,6 +83,12 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                         Games.Achievements.getAchievementsIntent(Main.getGoogleApiClient()),
                         0
                 );
+                break;
+            case R.id.leaderboards:
+                startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
+                        Main.getGoogleApiClient(),
+                        getString(R.string.leaderboard_time)),
+                        0);
                 break;
         }
     }

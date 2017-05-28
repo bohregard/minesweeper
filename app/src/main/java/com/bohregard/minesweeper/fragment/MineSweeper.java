@@ -288,6 +288,9 @@ public class MineSweeper extends Fragment implements
         achievementIncrement(R.string.achievement_flagged_10_mines, NUM_MINES);
 
         Log.d(TAG, "Time: " + (SystemClock.elapsedRealtime() - timeView.getBase()));
+        Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
+                getString(R.string.leaderboard_time),
+                SystemClock.elapsedRealtime() - timeView.getBase());
         if (SystemClock.elapsedRealtime() - timeView.getBase() < 60000) {
             achievementUnlock(R.string.achievement_fast_sweeper);
         }
