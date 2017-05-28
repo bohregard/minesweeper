@@ -32,8 +32,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 
 public class Main extends Activity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener {
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = Main.class.getSimpleName();
     private static InterstitialAd interstitialAd;
@@ -46,6 +45,7 @@ public class Main extends Activity implements
 
         getFragmentManager().beginTransaction()
                 .replace(R.id.fragment, new MainMenu(), null)
+                .addToBackStack(null)
                 .commit();
 
         setupAds();
@@ -64,11 +64,6 @@ public class Main extends Activity implements
     @Override
     protected void onStart() {
         super.onStart();
-        findViewById(R.id.sign_in_button).setOnClickListener(this);
-        findViewById(R.id.sign_out_button).setOnClickListener(this);
-        findViewById(R.id.start_game).setOnClickListener(this);
-        findViewById(R.id.settings).setOnClickListener(this);
-
         //todo check that the user does not want to sign in ever again...
         setupGameApi();
     }
@@ -183,9 +178,9 @@ public class Main extends Activity implements
      */
 
     private static GoogleApiClient googleApiClient;
-    private boolean resolvingConnectionFailure = false;
-    private boolean autoStartSignInFlow = true;
-    private boolean signInClicked = false;
+    private static boolean resolvingConnectionFailure = false;
+    private static boolean autoStartSignInFlow = true;
+    private static boolean signInClicked = false;
 
     private void setupGameApi() {
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -246,30 +241,6 @@ public class Main extends Activity implements
         googleApiClient.connect();
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.sign_in_button:
-                signInClicked = true;
-                googleApiClient.connect();
-                break;
-            case R.id.sign_out_button:
-                signInClicked = false;
-                Games.signOut(googleApiClient);
-                googleApiClient.disconnect();
-                findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-                findViewById(R.id.sign_out_button).setVisibility(View.GONE);
-                break;
-            case R.id.start_game:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.fragment, new MineSweeper(), null)
-                        .commit();
-                break;
-            case R.id.settings:
-                break;
-        }
-    }
-
     /*
      ******************************************************************************************
      *   Public Methods
@@ -278,5 +249,16 @@ public class Main extends Activity implements
 
     public static GoogleApiClient getGoogleApiClient() {
         return googleApiClient;
+    }
+
+    public static void googlePlaySignIn() {
+        signInClicked = true;
+        googleApiClient.connect();
+    }
+
+    public static void googlePlaySignOut() {
+        signInClicked = false;
+        Games.signOut(googleApiClient);
+        googleApiClient.disconnect();
     }
 }

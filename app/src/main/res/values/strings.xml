@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_id">677419107622</string>
     <string name="app_name">Minesweeper</string>
 
     <string name="mine_text">%1$d</string>

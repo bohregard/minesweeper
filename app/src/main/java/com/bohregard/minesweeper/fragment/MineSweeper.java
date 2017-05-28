@@ -44,7 +44,7 @@ public class MineSweeper extends Fragment implements
     private static final String TAG = MineSweeper.class.getSimpleName();
     private static int COLUMN_COUNT = 18;
     private static int ROW_COUNT = 12;
-    private static int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .15);
+    private static int MINES = (int) Math.floor((COLUMN_COUNT * ROW_COUNT) * .01);
     //    private static final int MINES = (int) Math.floor((ROW_COUNT*ROW_COUNT)*.40);
     private static int[][] mineLocations;
     private static boolean configChange = false;
@@ -397,6 +397,7 @@ public class MineSweeper extends Fragment implements
                 v.setOnLongClickListener(null);
             } else if ((mineLocation != MINE && v.getText() == "F")) {
                 setViewBackgroundDrawable(v, R.drawable.mine_wrong);
+                achievementUnlock(R.string.achievement_not_quite_a_mine);
             } else if (!(mineLocation == MINE &&
                     v.getText() == "F" ||
                     mineLocation >= MASK)) {
@@ -417,6 +418,16 @@ public class MineSweeper extends Fragment implements
         }
         if (count == MINES) {
             Log.d(TAG, "GAME WON!");
+            achievementUnlock(R.string.achievement_a_whole_new_world);
+            achievementIncrement(R.string.achievement_baby_bomb_sweeper, 1);
+            achievementIncrement(R.string.achievement_amateur_bomb_analyst, 1);
+            achievementIncrement(R.string.achievement_junior_bomb_detective, 1);
+            achievementIncrement(R.string.achievement_bomb_senpai, 1);
+            achievementIncrement(R.string.achievement_flagged_10_mines, MINES);
+            Log.d(TAG, "Time: " + (SystemClock.elapsedRealtime() - timeView.getBase()));
+            if (SystemClock.elapsedRealtime() - timeView.getBase() < 60000) {
+                achievementUnlock(R.string.achievement_fast_sweeper);
+            }
             timeView.stop();
             Toast.makeText(getActivity(),
                     "Game WON! Time: " + timeView.getText(),
@@ -463,6 +474,18 @@ public class MineSweeper extends Fragment implements
         }
     }
 
+    private void achievementUnlock(int id) {
+        if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
+            Games.Achievements.unlock(Main.getGoogleApiClient(), getString(id));
+        }
+    }
+
+    private void achievementIncrement(int id, int increment) {
+        if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
+            Games.Achievements.increment(Main.getGoogleApiClient(), getString(id), increment);
+        }
+    }
+
     /*
      ******************************************************************************************
      *   Public Methods
@@ -482,10 +505,7 @@ public class MineSweeper extends Fragment implements
             timeView.stop();
             showBoard(pos);
             sp.play(mineSound, 1, 1, 0, 0, 1);
-
-            if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
-                Games.Achievements.unlock(Main.getGoogleApiClient(), getString(R.string.babys_first_mine));
-            }
+            achievementUnlock(R.string.achievement_babys_first_mine);
             Main.showInterstitialAd();
         } else if (mineLocations[pos[0]][pos[1]] == 0) {
             search(pos[0], pos[1], 0);

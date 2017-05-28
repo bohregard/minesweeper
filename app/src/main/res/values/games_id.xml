@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="babys_first_mine">CgkIporNytsTEAIQAQ</string>
+    <string name="app_id">677419107622</string>
+    <string name="package_name">com.bohregard.minesweeper</string>
+    <string name="achievement_babys_first_mine">CgkIporNytsTEAIQAQ</string>
+    <string name="achievement_a_whole_new_world">CgkIporNytsTEAIQCQ</string>
+    <string name="achievement_baby_bomb_sweeper">CgkIporNytsTEAIQAw</string>
+    <string name="achievement_amateur_bomb_analyst">CgkIporNytsTEAIQBA</string>
+    <string name="achievement_junior_bomb_detective">CgkIporNytsTEAIQCA</string>
+    <string name="achievement_bomb_senpai">CgkIporNytsTEAIQBw</string>
+    <string name="achievement_fast_sweeper">CgkIporNytsTEAIQCg</string>
+    <string name="achievement_not_quite_a_mine">CgkIporNytsTEAIQCw</string>
+    <string name="achievement_flagged_10_mines">CgkIporNytsTEAIQDA</string>
+    <string name="leaderboard_wins">CgkIporNytsTEAIQBQ</string>
+    <string name="event_wins">CgkIporNytsTEAIQAg</string>
 </resources>
