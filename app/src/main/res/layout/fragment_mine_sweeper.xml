@@ -31,11 +31,11 @@
             android:textSize="20sp" />
 
         <ImageButton
+            android:id="@+id/smiley_reset"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_centerInParent="true"
             android:background="@drawable/smiley_face"
-            android:onClick="resetGame"
             android:text="Reset Game" />
 
         <Chronometer
@@ -54,14 +54,5 @@
         android:layout_height="0dp"
         android:layout_gravity="center"
         android:layout_weight="1" />
-
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@color/lightgrey"
-        ads:adSize="BANNER"
-        ads:adUnitId="@string/banner_ad_unit_id" />
 
 </LinearLayout>
