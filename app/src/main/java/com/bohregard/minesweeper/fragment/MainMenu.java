@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bohregard.minesweeper.R;
+
 /**
  * Created by bohregard on 5/28/2017.
  */
@@ -16,7 +18,7 @@ public class MainMenu extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
+        return inflater.inflate(R.layout.fragment_main_menu, container, false);
     }
 
     @Override

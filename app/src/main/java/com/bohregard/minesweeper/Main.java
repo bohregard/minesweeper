@@ -1,6 +1,7 @@
 package com.bohregard.minesweeper;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,18 +30,39 @@ import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 
 public class Main extends Activity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        View.OnClickListener {
 
     private static final String TAG = Main.class.getSimpleName();
     private static InterstitialAd interstitialAd;
-    private static GoogleApiClient googleApiClient;
     private static long adTimeOut = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        findViewById(R.id.sign_in_button).setOnClickListener(this);
+        findViewById(R.id.sign_out_button).setOnClickListener(this);
+
         setupAds();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "RESULT!");
+        Log.d(TAG, "Request Code: " + requestCode);
+        Log.d(TAG, "Result Int: " + resultCode);
+        Log.d(TAG, "Intent: " + data);
+        googleApiClient.connect();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        //todo check that the user does not want to sign in ever again...
         setupGameApi();
     }
 
@@ -74,6 +96,7 @@ public class Main extends Activity implements
 
     /**
      * Build the ad request
+     *
      * @return adRequest
      */
     private AdRequest adBuilder() {
@@ -152,6 +175,11 @@ public class Main extends Activity implements
     ******************************************************************************************
      */
 
+    private static GoogleApiClient googleApiClient;
+    private boolean resolvingConnectionFailure = false;
+    private boolean autoStartSignInFlow = true;
+    private boolean signInClicked = false;
+
     private void setupGameApi() {
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -176,6 +204,8 @@ public class Main extends Activity implements
         }
 
         Toast.makeText(this, "Hello: " + displayname, Toast.LENGTH_LONG).show();
+        findViewById(R.id.sign_in_button).setVisibility(View.GONE);
+        findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -184,11 +214,21 @@ public class Main extends Activity implements
         Log.e(TAG, "Connection Result: " + connectionResult.getErrorMessage());
         Log.e(TAG, "Connection Code: " + connectionResult.getErrorCode());
         Log.e(TAG, "Resolution: " + connectionResult.hasResolution());
-        if (connectionResult.hasResolution()) {
-            try {
-                connectionResult.startResolutionForResult(this, connectionResult.getErrorCode());
-            } catch (IntentSender.SendIntentException e) {
-                e.printStackTrace();
+        if (resolvingConnectionFailure) {
+            return;
+        }
+
+        if (autoStartSignInFlow || signInClicked) {
+            autoStartSignInFlow = false;
+            signInClicked = false;
+            resolvingConnectionFailure = true;
+            if (connectionResult.hasResolution()) {
+                try {
+                    connectionResult.startResolutionForResult(this, connectionResult.getErrorCode());
+                    resolvingConnectionFailure = false;
+                } catch (IntentSender.SendIntentException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -197,6 +237,23 @@ public class Main extends Activity implements
     public void onConnectionSuspended(int i) {
         Log.d(TAG, "Connection suspended, retrying");
         googleApiClient.connect();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.sign_in_button:
+                signInClicked = true;
+                googleApiClient.connect();
+                break;
+            case R.id.sign_out_button:
+                signInClicked = false;
+                Games.signOut(googleApiClient);
+                googleApiClient.disconnect();
+                findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+                findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+                break;
+        }
     }
 
     /*

@@ -6,8 +6,8 @@
     android:orientation="vertical">
 
     <fragment
-        android:id="@+id/minesweeper_fragment"
-        android:name="com.bohregard.minesweeper.fragment.MineSweeper"
+        android:id="@+id/fragment"
+        android:name="com.bohregard.minesweeper.fragment.MainMenu"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
