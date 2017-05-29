@@ -39,6 +39,7 @@ public class MineSweeper extends Fragment implements
         View.OnLongClickListener {
 
     private static final String TAG = MineSweeper.class.getSimpleName();
+    private boolean isChronometerRunning = false;
 
     /*
      ******************************************************************************************
@@ -54,9 +55,12 @@ public class MineSweeper extends Fragment implements
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(isChronometerRunning) {
+                    timeView.stop();
+                    timeView.setBase(SystemClock.elapsedRealtime());
+                    isChronometerRunning = false;
+                }
                 squareBoard.removeAllViews();
-                timeView.stop();
-                timeView.setBase(SystemClock.elapsedRealtime());
                 gameBoardArray = null;
                 setupBoard();
             }
@@ -147,7 +151,7 @@ public class MineSweeper extends Fragment implements
                 getString(R.string.shared_pref), MODE_PRIVATE
         );
 
-        gameMode = sharedPreferences.getInt(getString(R.string.game_mode), 2);
+        gameMode = sharedPreferences.getInt(getString(R.string.game_mode), 0);
 
         setDifficulty(gameMode, sharedPreferences);
 
@@ -320,6 +324,8 @@ public class MineSweeper extends Fragment implements
 
     private void gameLose(int index) {
         timeView.stop();
+        isChronometerRunning = false;
+
         setViewBackgroundDrawable(resetButton, R.drawable.smiley_loss);
         achievementUnlock(R.string.achievement_babys_first_mine);
         if (checkBoard() > 0) {
@@ -334,6 +340,7 @@ public class MineSweeper extends Fragment implements
 
     private void gameWin() {
         timeView.stop();
+        isChronometerRunning = false;
 
         achievementUnlock(R.string.achievement_a_whole_new_world);
         achievementIncrement(R.string.achievement_baby_bomb_sweeper, 1);
@@ -344,19 +351,16 @@ public class MineSweeper extends Fragment implements
 
         switch (gameMode) {
             case 0:
-                Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
-                        getString(R.string.leaderboard_easy_mode),
+                leaderBoardSubmit(R.string.leaderboard_easy_mode,
                         SystemClock.elapsedRealtime() - timeView.getBase());
                 break;
             case 1:
-                Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
-                        getString(R.string.leaderboard_medium_mode),
-                        SystemClock.elapsedRealtime() - timeView.getBase());
+                leaderBoardSubmit(R.string.leaderboard_medium_mode,
+                    SystemClock.elapsedRealtime() - timeView.getBase());
                 break;
             case 2:
-                Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
-                        getString(R.string.leaderboard_hard_mode),
-                        SystemClock.elapsedRealtime() - timeView.getBase());
+                leaderBoardSubmit(R.string.leaderboard_hard_mode,
+                    SystemClock.elapsedRealtime() - timeView.getBase());
                 break;
         }
 
@@ -418,7 +422,11 @@ public class MineSweeper extends Fragment implements
 
     @Override
     public void onClick(View v) {
-        timeView.start();
+        if(!isChronometerRunning) {
+            timeView.setBase(SystemClock.elapsedRealtime());
+            timeView.start();
+            isChronometerRunning = true;
+        }
         TextView mine = (TextView) v;
         final int[] pos = (int[]) v.getTag();
         int value = gameBoardArray[getIndex(pos)];
@@ -555,6 +563,12 @@ public class MineSweeper extends Fragment implements
     private void achievementIncrement(int id, int increment) {
         if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
             Games.Achievements.increment(Main.getGoogleApiClient(), getString(id), increment);
+        }
+    }
+
+    private void leaderBoardSubmit(int id, long time) {
+        if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
+            Games.Leaderboards.submitScore(Main.getGoogleApiClient(), getString(id), time);
         }
     }
 }

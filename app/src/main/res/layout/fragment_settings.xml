@@ -15,6 +15,7 @@
             android:text="Game Mode:" />
 
         <Spinner
+            android:id="@+id/game_modes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:entries="@array/game_modes" />
