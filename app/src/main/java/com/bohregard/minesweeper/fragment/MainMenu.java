@@ -1,18 +1,17 @@
 package com.bohregard.minesweeper.fragment;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
 import com.bohregard.minesweeper.Main;
 import com.bohregard.minesweeper.R;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.games.Games;
 
 /**
@@ -87,10 +86,40 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                 );
                 break;
             case R.id.leaderboards:
-                startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
-                        Main.getGoogleApiClient(),
-                        getString(R.string.leaderboard_time)),
-                        0);
+                SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
+                        getString(R.string.shared_pref),
+                        Context.MODE_PRIVATE);
+
+                startActivityForResult(Games.Leaderboards.getAllLeaderboardsIntent(
+                        Main.getGoogleApiClient()), 0);
+
+//                switch (sharedPreferences.getInt(getString(R.string.game_mode), 0)) {
+//                    case 0:
+//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
+//                                Main.getGoogleApiClient(),
+//                                getString(R.string.leaderboard_easy_mode)),
+//                                0);
+//                        break;
+//                    case 1:
+//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
+//                                Main.getGoogleApiClient(),
+//                                getString(R.string.leaderboard_medium_mode)),
+//                                0);
+//                        break;
+//                    case 2:
+//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
+//                                Main.getGoogleApiClient(),
+//                                getString(R.string.leaderboard_hard_mode)),
+//                                0);
+//                        break;
+//                    case 3:
+//                        Games.Leaderboards.getAllLeaderboardsIntent()
+//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
+//                                Main.getGoogleApiClient(),
+//                                getString(R.string.leaderboard_easy_mode)),
+//                                0);
+//                        break;
+//                }
                 break;
             case R.id.settings:
                 getFragmentManager().beginTransaction()

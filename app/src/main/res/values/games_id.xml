@@ -11,6 +11,12 @@
     <string name="achievement_fast_sweeper">CgkIporNytsTEAIQCg</string>
     <string name="achievement_not_quite_a_mine">CgkIporNytsTEAIQCw</string>
     <string name="achievement_flagged_10_mines">CgkIporNytsTEAIQDA</string>
-    <string name="leaderboard_time">CgkIporNytsTEAIQBQ</string>
+    <string name="achievement_flagged_25_mines">CgkIporNytsTEAIQEA</string>
+    <string name="achievement_flagged_100_mines">CgkIporNytsTEAIQEQ</string>
+    <string name="achievement_flagged_200_mines">CgkIporNytsTEAIQEg</string>
+    <string name="achievement_flagged_500_mines">CgkIporNytsTEAIQEw</string>
+    <string name="leaderboard_easy_mode">CgkIporNytsTEAIQDQ</string>
+    <string name="leaderboard_medium_mode">CgkIporNytsTEAIQDg</string>
+    <string name="leaderboard_hard_mode">CgkIporNytsTEAIQDw</string>
     <string name="event_wins">CgkIporNytsTEAIQAg</string>
 </resources>

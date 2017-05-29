@@ -1,14 +1,12 @@
 package com.bohregard.minesweeper.fragment;
 
 import android.app.Fragment;
-import android.graphics.Color;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -29,6 +27,8 @@ import com.bohregard.minesweeper.util.SquareBoard;
 import com.google.android.gms.games.Games;
 
 import java.util.Random;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by bohregard on 5/28/2017.
@@ -86,13 +86,15 @@ public class MineSweeper extends Fragment implements
     private int clickSound;
     private int flagSound;
     private int mineSound;
+    private int gameMode;
 
-    private static final int COLUMN_COUNT = 12;
-    private static final int ROW_COUNT = 18;
+    private static int COLUMN_COUNT = 12;
+    private static int ROW_COUNT = 18;
+    private int NUM_MINES = 32;
+
     private final int MINE_MASK = 10;
     private final int FLAG_MASK = 11;
     private final int MASK = 30;
-    private final int NUM_MINES = 32;
 
     /**
      * Use a sound pool to build our sounds so that we can play multiple sounds without issues
@@ -104,12 +106,51 @@ public class MineSweeper extends Fragment implements
         mineSound = sp.load(getActivity(), R.raw.mine, 1);
     }
 
+    private void setDifficulty(int mode, SharedPreferences sharedPreferences) {
+        switch (mode) {
+            case 0: //Easy
+                COLUMN_COUNT = 8;
+                ROW_COUNT = 12;
+                NUM_MINES = 10;
+                break;
+            case 1: //Medium
+                COLUMN_COUNT = 12;
+                ROW_COUNT = 18;
+                NUM_MINES = 32;
+                break;
+            case 2: //Hard
+                COLUMN_COUNT = 14;
+                ROW_COUNT = 22;
+                NUM_MINES = 100;
+                break;
+            case 3: //Custom
+                COLUMN_COUNT = sharedPreferences.getInt(getString(R.string.custom_row), 12);
+                ROW_COUNT = sharedPreferences.getInt(getString(R.string.custom_column), 18);
+                NUM_MINES = sharedPreferences.getInt(getString(R.string.custom_mine), 32);
+                break;
+            default:
+                COLUMN_COUNT = 12;
+                ROW_COUNT = 18;
+                NUM_MINES = 32;
+                break;
+        }
+    }
+
     /**
      * Set the board configuration up. Generate an empty array and fill it with the amount of
      * mines set. Shuffle the mines, and calculate the board numbers.
      */
     private void setupBoard() {
         setViewBackgroundDrawable(resetButton, R.drawable.smiley_regular);
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
+                getString(R.string.shared_pref), MODE_PRIVATE
+        );
+
+        gameMode = sharedPreferences.getInt(getString(R.string.game_mode), 2);
+
+        setDifficulty(gameMode, sharedPreferences);
+
         // If the boardArray are null, we need to build the board from scratch
         if (gameBoardArray == null) {
             gameBoardArray = new int[ROW_COUNT * COLUMN_COUNT];
@@ -200,36 +241,48 @@ public class MineSweeper extends Fragment implements
 
     private void showSquare(TextView mine, int index) {
         gameBoardArray[index] += MASK;
-        setMineText(mine, gameBoardArray[index]);
+        //setMineText(mine, gameBoardArray[index]);
         mine.setTypeface(null, Typeface.BOLD);
-        setViewBackgroundDrawable(mine, R.drawable.mine_clicked);
+        //setViewBackgroundDrawable(mine, R.drawable.mine_clicked);
         mine.setOnClickListener(null);
         mine.setOnLongClickListener(null);
 
         switch (gameBoardArray[index]) {
             case 0:
             case MASK:
-                mine.setTextColor(ContextCompat.getColor(getActivity(), R.color.transparent));
+                setViewBackgroundDrawable(mine, R.drawable.ic_0);
                 break;
             case 1:
             case 1 + MASK:
-                mine.setTextColor(Color.BLUE);
+                setViewBackgroundDrawable(mine, R.drawable.ic_1);
                 break;
             case 2:
             case 2 + MASK:
-                mine.setTextColor(Color.GREEN);
+                setViewBackgroundDrawable(mine, R.drawable.ic_2);
                 break;
             case 3:
             case 3 + MASK:
-                mine.setTextColor(Color.RED);
+                setViewBackgroundDrawable(mine, R.drawable.ic_3);
                 break;
             case 4:
             case 4 + MASK:
-                mine.setTextColor(Color.parseColor("#000099"));
+                setViewBackgroundDrawable(mine, R.drawable.ic_4);
                 break;
             case 5:
             case 5 + MASK:
-                mine.setTextColor(Color.parseColor("#DEB887"));
+                setViewBackgroundDrawable(mine, R.drawable.ic_5);
+                break;
+            case 6:
+            case 6 + MASK:
+                setViewBackgroundDrawable(mine, R.drawable.ic_6);
+                break;
+            case 7:
+            case 7 + MASK:
+                setViewBackgroundDrawable(mine, R.drawable.ic_7);
+                break;
+            case 8:
+            case 8 + MASK:
+                setViewBackgroundDrawable(mine, R.drawable.ic_8);
                 break;
             case MINE_MASK:
             case MINE_MASK + MASK:
@@ -289,9 +342,24 @@ public class MineSweeper extends Fragment implements
         achievementIncrement(R.string.achievement_bomb_senpai, 1);
         achievementIncrement(R.string.achievement_flagged_10_mines, NUM_MINES);
 
-        Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
-                getString(R.string.leaderboard_time),
-                SystemClock.elapsedRealtime() - timeView.getBase());
+        switch (gameMode) {
+            case 0:
+                Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
+                        getString(R.string.leaderboard_easy_mode),
+                        SystemClock.elapsedRealtime() - timeView.getBase());
+                break;
+            case 1:
+                Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
+                        getString(R.string.leaderboard_medium_mode),
+                        SystemClock.elapsedRealtime() - timeView.getBase());
+                break;
+            case 2:
+                Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
+                        getString(R.string.leaderboard_hard_mode),
+                        SystemClock.elapsedRealtime() - timeView.getBase());
+                break;
+        }
+
         if (SystemClock.elapsedRealtime() - timeView.getBase() < 60000) {
             achievementUnlock(R.string.achievement_fast_sweeper);
         }
