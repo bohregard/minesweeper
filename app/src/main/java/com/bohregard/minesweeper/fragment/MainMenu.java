@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 
 import com.bohregard.minesweeper.Main;
 import com.bohregard.minesweeper.R;
@@ -20,23 +21,24 @@ import com.google.android.gms.games.Games;
 
 public class MainMenu extends Fragment implements View.OnClickListener {
 
-    private SignInButton signIn;
-    private Button signOut;
+    private RelativeLayout signIn;
+    private RelativeLayout signOut;
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main_menu, container, false);
-        signIn = (SignInButton) v.findViewById(R.id.sign_in_button);
+        signIn = (RelativeLayout) v.findViewById(R.id.sign_in_button);
         signIn.setOnClickListener(this);
 
-        signOut = (Button) v.findViewById(R.id.sign_out_button);
+        signOut = (RelativeLayout) v.findViewById(R.id.sign_out_button);
         signOut.setOnClickListener(this);
 
         v.findViewById(R.id.start_game).setOnClickListener(this);
-        v.findViewById(R.id.settings).setOnClickListener(this);
+        v.findViewById(R.id.achievements).setOnClickListener(this);
         v.findViewById(R.id.leaderboards).setOnClickListener(this);
+        v.findViewById(R.id.settings).setOnClickListener(this);
 
         if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
             signIn.setVisibility(View.GONE);
@@ -78,7 +80,7 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                         .addToBackStack(null)
                         .commit();
                 break;
-            case R.id.settings:
+            case R.id.achievements:
                 startActivityForResult(
                         Games.Achievements.getAchievementsIntent(Main.getGoogleApiClient()),
                         0
@@ -89,6 +91,12 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                         Main.getGoogleApiClient(),
                         getString(R.string.leaderboard_time)),
                         0);
+                break;
+            case R.id.settings:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.fragment, new Settings(), null)
+                        .addToBackStack(null)
+                        .commit();
                 break;
         }
     }

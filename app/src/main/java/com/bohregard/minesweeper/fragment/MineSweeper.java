@@ -5,8 +5,10 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -23,7 +25,6 @@ import android.widget.Toast;
 
 import com.bohregard.minesweeper.Main;
 import com.bohregard.minesweeper.R;
-import com.bohregard.minesweeper.util.AutoResizeTextView;
 import com.bohregard.minesweeper.util.SquareBoard;
 import com.google.android.gms.games.Games;
 
@@ -49,7 +50,7 @@ public class MineSweeper extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_mine_sweeper, container, false);
-        ImageButton resetButton = (ImageButton) v.findViewById(R.id.smiley_reset);
+        resetButton = (ImageButton) v.findViewById(R.id.smiley_reset);
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,6 +79,7 @@ public class MineSweeper extends Fragment implements
     private SquareBoard squareBoard;
     private Chronometer timeView;
     private TextView minesLeftView;
+    private ImageButton resetButton;
     private int[] gameBoardArray = null;
     private int minesLeft = 0;
     private SoundPool sp;
@@ -85,12 +87,12 @@ public class MineSweeper extends Fragment implements
     private int flagSound;
     private int mineSound;
 
-    private static final int COLUMN_COUNT = 4;
-    private static final int ROW_COUNT = 4;
+    private static final int COLUMN_COUNT = 12;
+    private static final int ROW_COUNT = 18;
     private final int MINE_MASK = 10;
     private final int FLAG_MASK = 11;
     private final int MASK = 30;
-    private final int NUM_MINES = 2;
+    private final int NUM_MINES = 32;
 
     /**
      * Use a sound pool to build our sounds so that we can play multiple sounds without issues
@@ -107,8 +109,7 @@ public class MineSweeper extends Fragment implements
      * mines set. Shuffle the mines, and calculate the board numbers.
      */
     private void setupBoard() {
-        //TextView minesLeftView = (TextView) getActivity().findViewById(R.id.mines_left);
-
+        setViewBackgroundDrawable(resetButton, R.drawable.smiley_regular);
         // If the boardArray are null, we need to build the board from scratch
         if (gameBoardArray == null) {
             gameBoardArray = new int[ROW_COUNT * COLUMN_COUNT];
@@ -149,8 +150,8 @@ public class MineSweeper extends Fragment implements
         layoutParams.columnSpec = GridLayout.spec(column, 1f);
         layoutParams.rowSpec = GridLayout.spec(row, 1f);
 
-        AutoResizeTextView mine = new AutoResizeTextView(getActivity());
-        mine.setTextSize(500);
+        TextView mine = new TextView(getActivity());
+        mine.setTextSize(50);
         mine.setGravity(Gravity.CENTER);
         setViewBackgroundDrawable(mine, R.drawable.mine_unclicked);
         mine.setLayoutParams(layoutParams);
@@ -186,22 +187,20 @@ public class MineSweeper extends Fragment implements
 
         for (int rowNum = startPosX; rowNum <= endPosX; rowNum++) {
             for (int colNum = startPosY; colNum <= endPosY; colNum++) {
-                AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(getIndex(rowNum, colNum));
+                TextView v = (TextView) squareBoard.findViewById(getIndex(rowNum, colNum));
                 if (gameBoardArray[getIndex(rowNum, colNum)] == 0) {
                     showSquare(v, getIndex(rowNum, colNum));
                     zeroReveal(rowNum, colNum);
                 } else if (gameBoardArray[getIndex(rowNum, colNum)] < 10) {
                     showSquare(v, getIndex(rowNum, colNum));
-
                 }
             }
         }
     }
 
-    private void showSquare(AutoResizeTextView mine, int index) {
+    private void showSquare(TextView mine, int index) {
         gameBoardArray[index] += MASK;
         setMineText(mine, gameBoardArray[index]);
-        mine.setTextSize(500);
         mine.setTypeface(null, Typeface.BOLD);
         setViewBackgroundDrawable(mine, R.drawable.mine_clicked);
         mine.setOnClickListener(null);
@@ -242,7 +241,7 @@ public class MineSweeper extends Fragment implements
 
     private void showBoard(int index) {
         for (int i = 0; i < COLUMN_COUNT * ROW_COUNT; i++) {
-            AutoResizeTextView v = (AutoResizeTextView) squareBoard.findViewById(i);
+            TextView v = (TextView) squareBoard.findViewById(i);
             int[] pos = (int[]) v.getTag();
             int value = gameBoardArray[i];
             if (value <= MASK) {
@@ -267,13 +266,16 @@ public class MineSweeper extends Fragment implements
      */
 
     private void gameLose(int index) {
-        Log.e(TAG, "Game Ends! Show the board...");
         timeView.stop();
+        setViewBackgroundDrawable(resetButton, R.drawable.smiley_loss);
         achievementUnlock(R.string.achievement_babys_first_mine);
-        if(checkBoard() > 0) {
+        if (checkBoard() > 0) {
             achievementIncrement(R.string.achievement_flagged_10_mines, checkBoard());
         }
+        long time1 = SystemClock.elapsedRealtime();
         showBoard(index);
+        long time2 = SystemClock.elapsedRealtime();
+        Log.e(TAG, "Lose Time: " + (time2 - time1));
         Main.showInterstitialAd();
     }
 
@@ -287,7 +289,6 @@ public class MineSweeper extends Fragment implements
         achievementIncrement(R.string.achievement_bomb_senpai, 1);
         achievementIncrement(R.string.achievement_flagged_10_mines, NUM_MINES);
 
-        Log.d(TAG, "Time: " + (SystemClock.elapsedRealtime() - timeView.getBase()));
         Games.Leaderboards.submitScore(Main.getGoogleApiClient(),
                 getString(R.string.leaderboard_time),
                 SystemClock.elapsedRealtime() - timeView.getBase());
@@ -297,14 +298,14 @@ public class MineSweeper extends Fragment implements
         Toast.makeText(getActivity(),
                 "Game WON! Time: " + timeView.getText(),
                 Toast.LENGTH_SHORT).show();
-        showBoard(100);
+        showBoard(-1);
         Main.showInterstitialAd();
     }
 
     private int checkBoard() {
         int count = 0;
         for (int i = 0; i < ROW_COUNT * COLUMN_COUNT; i++) {
-            if(gameBoardArray[i] == MINE_MASK + FLAG_MASK) {
+            if (gameBoardArray[i] == MINE_MASK + FLAG_MASK) {
                 count++;
             }
         }
@@ -313,7 +314,7 @@ public class MineSweeper extends Fragment implements
     }
 
     //todo, Refactor flag toggling
-    private void toggleFlag(AutoResizeTextView mine) {
+    private void toggleFlag(TextView mine) {
 
         int[] pos = (int[]) mine.getTag();
         int value = gameBoardArray[getIndex(pos)];
@@ -334,8 +335,7 @@ public class MineSweeper extends Fragment implements
             mine.setOnClickListener(null);
             if (minesLeft == 0) {
                 //check board
-                Log.d(TAG, "NO MINES LEFT");
-                if(checkBoard() == NUM_MINES) {
+                if (checkBoard() == NUM_MINES) {
                     gameWin();
                 }
             }
@@ -351,17 +351,19 @@ public class MineSweeper extends Fragment implements
     @Override
     public void onClick(View v) {
         timeView.start();
-        AutoResizeTextView mine = (AutoResizeTextView) v;
-        int[] pos = (int[]) v.getTag();
+        TextView mine = (TextView) v;
+        final int[] pos = (int[]) v.getTag();
         int value = gameBoardArray[getIndex(pos)];
-        Log.d(TAG, "Value: " + value);
         switch (value) {
             case MINE_MASK:
                 gameLose(getIndex(pos));
                 sp.play(mineSound, 1, 1, 0, 0, 1);
                 break;
             case 0:
+                long time1 = SystemClock.elapsedRealtime();
                 zeroReveal(pos[0], pos[1]);
+                long time2 = SystemClock.elapsedRealtime();
+                Log.e(TAG, "Time: " + (time2 - time1));
                 sp.play(clickSound, 1, 1, 0, 0, 1);
                 break;
             default:
@@ -369,12 +371,11 @@ public class MineSweeper extends Fragment implements
                 sp.play(clickSound, 1, 1, 0, 0, 1);
                 break;
         }
-        printArray();
     }
 
     @Override
     public boolean onLongClick(View v) {
-        toggleFlag((AutoResizeTextView) v);
+        toggleFlag((TextView) v);
         sp.play(flagSound, 1, 1, 0, 0, 1);
         return true;
     }

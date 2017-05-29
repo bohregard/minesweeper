@@ -35,7 +35,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_centerInParent="true"
-            android:background="@drawable/smiley_face"
+            android:background="@drawable/smiley_regular"
             android:text="Reset Game" />
 
         <Chronometer
