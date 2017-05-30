@@ -208,6 +208,8 @@ public class Main extends Activity implements
         Toast.makeText(this, "Hello: " + displayname, Toast.LENGTH_LONG).show();
         findViewById(R.id.sign_in_button).setVisibility(View.GONE);
         findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+        findViewById(R.id.achievements).setVisibility(View.VISIBLE);
+        findViewById(R.id.leaderboards).setVisibility(View.VISIBLE);
     }
 
     @Override

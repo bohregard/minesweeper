@@ -19,13 +19,30 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
 
-    Properties versionProps = new Properties()
     def versionPropsFile = file('version.properties')
-    if (versionPropsFile.exists())
+    def versionBuild
+
+
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
         versionProps.load(new FileInputStream(versionPropsFile))
-    def versionBuild = (versionProps['VERSION_BUILD'] ?: "0").toInteger() + 1
-    versionProps['VERSION_BUILD'] = versionBuild.toString()
-    versionProps.store(versionPropsFile.newWriter(), null)
+        versionBuild = versionProps['VERSION_BUILD'].toInteger()
+    } else {
+        throw new GradleException("Could not read version.properties!")
+    }
+
+    ext.autoIncrementBuildNumber = {
+        if (versionPropsFile.canRead()) {
+            def Properties versionProps = new Properties()
+            versionProps.load(new FileInputStream(versionPropsFile))
+            versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
+            versionProps['VERSION_BUILD'] = versionBuild.toString()
+            versionProps.store(versionPropsFile.newWriter(), null)
+        } else {
+            throw new GradleException("Could not read version.properties!")
+        }
+    }
+
 
     def versionMajor = 0
     def versionMinor = 1
@@ -47,6 +64,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
+        }
+    }
+
+    gradle.taskGraph.whenReady { taskGraph ->
+        if (taskGraph.hasTask(assembleDebug) || taskGraph.hasTask(assembleRelease)) {
+            autoIncrementBuildNumber()
         }
     }
 }

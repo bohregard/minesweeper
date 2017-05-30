@@ -42,6 +42,9 @@ public class MainMenu extends Fragment implements View.OnClickListener {
         if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
             signIn.setVisibility(View.GONE);
             signOut.setVisibility(View.VISIBLE);
+        } else {
+            v.findViewById(R.id.achievements).setVisibility(View.GONE);
+            v.findViewById(R.id.leaderboards).setVisibility(View.GONE);
         }
 
         return v;
@@ -74,10 +77,20 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                 signOut.setVisibility(View.GONE);
                 break;
             case R.id.start_game:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.fragment, new MineSweeper(), null)
-                        .addToBackStack(null)
-                        .commit();
+                SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
+                        getString(R.string.shared_pref),
+                        Context.MODE_PRIVATE);
+                if(sharedPreferences.getBoolean(getString(R.string.tutorial), false)) {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.fragment, new Tutorial(), null)
+                            .addToBackStack(null)
+                            .commit();
+                } else {
+                    getFragmentManager().beginTransaction()
+                            .replace(R.id.fragment, new MineSweeper(), null)
+                            .addToBackStack(null)
+                            .commit();
+                }
                 break;
             case R.id.achievements:
                 startActivityForResult(
@@ -86,40 +99,8 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                 );
                 break;
             case R.id.leaderboards:
-                SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
-                        getString(R.string.shared_pref),
-                        Context.MODE_PRIVATE);
-
                 startActivityForResult(Games.Leaderboards.getAllLeaderboardsIntent(
                         Main.getGoogleApiClient()), 0);
-
-//                switch (sharedPreferences.getInt(getString(R.string.game_mode), 0)) {
-//                    case 0:
-//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
-//                                Main.getGoogleApiClient(),
-//                                getString(R.string.leaderboard_easy_mode)),
-//                                0);
-//                        break;
-//                    case 1:
-//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
-//                                Main.getGoogleApiClient(),
-//                                getString(R.string.leaderboard_medium_mode)),
-//                                0);
-//                        break;
-//                    case 2:
-//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
-//                                Main.getGoogleApiClient(),
-//                                getString(R.string.leaderboard_hard_mode)),
-//                                0);
-//                        break;
-//                    case 3:
-//                        Games.Leaderboards.getAllLeaderboardsIntent()
-//                        startActivityForResult(Games.Leaderboards.getLeaderboardIntent(
-//                                Main.getGoogleApiClient(),
-//                                getString(R.string.leaderboard_easy_mode)),
-//                                0);
-//                        break;
-//                }
                 break;
             case R.id.settings:
                 getFragmentManager().beginTransaction()

@@ -8,6 +8,7 @@
     <string name="inters_ad_unit_id">ca-app-pub-8564173930088852/2459464128</string>
 
     <string name="shared_pref">Shared Preferences</string>
+    <string name="tutorial">Tutorial</string>
     <string name="game_mode">Game Mode</string>
     <string name="custom_row">Custom Row</string>
     <string name="custom_column">Custom Column</string>
