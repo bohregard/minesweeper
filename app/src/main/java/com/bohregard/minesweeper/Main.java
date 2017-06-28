@@ -32,7 +32,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 
 public class Main extends Activity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = Main.class.getSimpleName();
     private static InterstitialAd interstitialAd;
@@ -42,30 +42,29 @@ public class Main extends Activity implements
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG, "SetupGameApi");
+        setupGameApi();
 
         getFragmentManager().beginTransaction()
-                .replace(R.id.fragment, new MainMenu(), null)
-                .addToBackStack(null)
+                .replace(R.id.fragment, new MainMenu(), "MINE")
                 .commit();
-
         setupAds();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "RESULT!");
-        Log.d(TAG, "Request Code: " + requestCode);
-        Log.d(TAG, "Result Int: " + resultCode);
-        Log.d(TAG, "Intent: " + data);
+        Log.d(TAG, "Result...");
         googleApiClient.connect();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        //todo check that the user does not want to sign in ever again...
-        setupGameApi();
+        findViewById(R.id.sign_in_button).setVisibility(View.GONE);
+        findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+        findViewById(R.id.achievements).setVisibility(View.VISIBLE);
+        findViewById(R.id.leaderboards).setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -182,20 +181,26 @@ public class Main extends Activity implements
     private static boolean autoStartSignInFlow = true;
     private static boolean signInClicked = false;
 
+    public static GoogleApiClient getGoogleApiClient() {
+        return googleApiClient;
+    }
+
+    public static void setSignInClicked(boolean clicked) {
+        signInClicked = clicked;
+    }
+
     private void setupGameApi() {
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(Games.API).addScope(Games.SCOPE_GAMES)
                 .build();
-
         googleApiClient.connect();
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.d(TAG, "Connection established");
-
         Player p = Games.Players.getCurrentPlayer(googleApiClient);
         String displayname;
         if (p == null) {
@@ -205,11 +210,12 @@ public class Main extends Activity implements
             displayname = p.getDisplayName();
         }
 
-        Toast.makeText(this, "Hello: " + displayname, Toast.LENGTH_LONG).show();
         findViewById(R.id.sign_in_button).setVisibility(View.GONE);
         findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
         findViewById(R.id.achievements).setVisibility(View.VISIBLE);
         findViewById(R.id.leaderboards).setVisibility(View.VISIBLE);
+
+        Toast.makeText(this, "Hello: " + displayname, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -243,24 +249,4 @@ public class Main extends Activity implements
         googleApiClient.connect();
     }
 
-    /*
-     ******************************************************************************************
-     *   Public Methods
-     ******************************************************************************************
-     */
-
-    public static GoogleApiClient getGoogleApiClient() {
-        return googleApiClient;
-    }
-
-    public static void googlePlaySignIn() {
-        signInClicked = true;
-        googleApiClient.connect();
-    }
-
-    public static void googlePlaySignOut() {
-        signInClicked = false;
-        Games.signOut(googleApiClient);
-        googleApiClient.disconnect();
-    }
 }

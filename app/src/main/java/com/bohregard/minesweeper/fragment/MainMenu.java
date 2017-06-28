@@ -15,6 +15,7 @@ import com.bohregard.minesweeper.R;
 import com.google.android.gms.games.Games;
 
 /**
+ * todo: pause the time
  * Created by bohregard on 5/28/2017.
  */
 
@@ -69,10 +70,16 @@ public class MainMenu extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.sign_in_button:
-                Main.googlePlaySignIn();
+                Main.getGoogleApiClient().connect();
+                Main.setSignInClicked(true);
                 break;
             case R.id.sign_out_button:
-                Main.googlePlaySignOut();
+                Games.signOut(Main.getGoogleApiClient());
+                Main.getGoogleApiClient().disconnect();
+                getActivity().findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+                getActivity().findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+                getActivity().findViewById(R.id.achievements).setVisibility(View.GONE);
+                getActivity().findViewById(R.id.leaderboards).setVisibility(View.GONE);
                 signIn.setVisibility(View.VISIBLE);
                 signOut.setVisibility(View.GONE);
                 break;
@@ -82,12 +89,12 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                         Context.MODE_PRIVATE);
                 if(sharedPreferences.getBoolean(getString(R.string.tutorial), false)) {
                     getFragmentManager().beginTransaction()
-                            .replace(R.id.fragment, new Tutorial(), null)
+                            .replace(R.id.fragment, new Tutorial(), "MINE")
                             .addToBackStack(null)
                             .commit();
                 } else {
                     getFragmentManager().beginTransaction()
-                            .replace(R.id.fragment, new MineSweeper(), null)
+                            .replace(R.id.fragment, new MineSweeper(), "MINE")
                             .addToBackStack(null)
                             .commit();
                 }
@@ -104,7 +111,7 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                 break;
             case R.id.settings:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.fragment, new Settings(), null)
+                        .replace(R.id.fragment, new Settings(), "MINE")
                         .addToBackStack(null)
                         .commit();
                 break;

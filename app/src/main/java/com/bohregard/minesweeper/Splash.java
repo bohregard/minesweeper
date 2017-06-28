@@ -1,15 +1,25 @@
 package com.bohregard.minesweeper;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import com.bohregard.minesweeper.util.Utils;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.Player;
 
 import java.lang.ref.WeakReference;
 
@@ -25,46 +35,11 @@ public class Splash extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash);
-
-//        boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
-//        if (tabletSize) {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//        } else {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-//        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Utils.hideSystemUI(getWindow().getDecorView());
         }
-        new SplashScreenTask(this).execute();
-    }
-
-    static class SplashScreenTask extends AsyncTask<Void, Void, Void> {
-
-        private WeakReference<Context> splashActivity;
-
-        SplashScreenTask(Context splash) {
-            splashActivity = new WeakReference<>(splash);
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            for (int i = 0; i < 5; i++) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if (splashActivity.get() != null) {
-                splashActivity.get().startActivity(
-                        new Intent(splashActivity.get().getApplicationContext(), Main.class));
-            }
-        }
+        Intent intent = new Intent(this, Main.class);
+        startActivity(intent);
+        finish();
     }
 }
