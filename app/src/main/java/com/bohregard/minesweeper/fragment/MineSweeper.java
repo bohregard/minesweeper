@@ -330,6 +330,10 @@ public class MineSweeper extends Fragment implements
         achievementUnlock(R.string.achievement_babys_first_mine);
         if (checkBoard() > 0) {
             achievementIncrement(R.string.achievement_flagged_10_mines, checkBoard());
+            achievementIncrement(R.string.achievement_flagged_25_mines, checkBoard());
+            achievementIncrement(R.string.achievement_flagged_100_mines, checkBoard());
+            achievementIncrement(R.string.achievement_flagged_200_mines, checkBoard());
+            achievementIncrement(R.string.achievement_flagged_500_mines, checkBoard());
         }
         long time1 = SystemClock.elapsedRealtime();
         showBoard(index);
@@ -348,6 +352,10 @@ public class MineSweeper extends Fragment implements
         achievementIncrement(R.string.achievement_junior_bomb_detective, 1);
         achievementIncrement(R.string.achievement_bomb_senpai, 1);
         achievementIncrement(R.string.achievement_flagged_10_mines, NUM_MINES);
+        achievementIncrement(R.string.achievement_flagged_25_mines, NUM_MINES);
+        achievementIncrement(R.string.achievement_flagged_100_mines, NUM_MINES);
+        achievementIncrement(R.string.achievement_flagged_200_mines, NUM_MINES);
+        achievementIncrement(R.string.achievement_flagged_500_mines, NUM_MINES);
 
         switch (gameMode) {
             case 0:

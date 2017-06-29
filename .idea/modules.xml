@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://C:\Users\atodd\AndroidStudioProjects\minesweeper\Minesweeper.iml" filepath="C:\Users\atodd\AndroidStudioProjects\minesweeper\Minesweeper.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:\Users\atodd\AndroidStudioProjects\minesweeper\app\app.iml" filepath="C:\Users\atodd\AndroidStudioProjects\minesweeper\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/minesweeper.iml" filepath="$PROJECT_DIR$/minesweeper.iml" />
     </modules>
   </component>
