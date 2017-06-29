@@ -60,11 +60,16 @@ public class Main extends Activity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Result...");
+        Log.d(TAG, "Result Code: " + resultCode); //0 failed? -1 passed?
+        Log.d(TAG, "Request Code: " + requestCode); //4 connection code?
+        Log.d(TAG, "Intent Data: " + data);
         googleApiClient.connect();
-        findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-        findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
-        findViewById(R.id.achievements).setVisibility(View.VISIBLE);
-        findViewById(R.id.leaderboards).setVisibility(View.VISIBLE);
+        if(resultCode == RESULT_OK) {
+            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
+            findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
+            findViewById(R.id.achievements).setVisibility(View.VISIBLE);
+            findViewById(R.id.leaderboards).setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
