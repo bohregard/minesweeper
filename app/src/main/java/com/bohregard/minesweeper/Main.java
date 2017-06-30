@@ -50,7 +50,7 @@ public class Main extends Activity implements
                 .commit();
 
         getFragmentManager().beginTransaction()
-                .add(R.id.fragment, new MainMenu(), "MINE")
+                .add(R.id.fragment, new MainMenu(), "MENU")
                 .addToBackStack(null)
                 .commit();
         setupAds();
@@ -59,9 +59,10 @@ public class Main extends Activity implements
     @Override
     public void onBackPressed() {
         Log.d(TAG, "FManager Size: " + getFragmentManager().getBackStackEntryCount());
-        if(getFragmentManager().getBackStackEntryCount() == 0) {
+        if(getFragmentManager().findFragmentByTag("MINE").isVisible()
+                && getFragmentManager().getBackStackEntryCount() == 0) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.fragment, new MainMenu(), "MINE")
+                    .add(R.id.fragment, new MainMenu(), "MENU")
                     .addToBackStack(null)
                     .commit();
         } else {

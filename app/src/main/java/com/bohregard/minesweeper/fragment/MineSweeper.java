@@ -40,6 +40,7 @@ public class MineSweeper extends Fragment implements
 
     private static final String TAG = MineSweeper.class.getSimpleName();
     private boolean isChronometerRunning = false;
+    private View v;
 
     /*
      ******************************************************************************************
@@ -50,27 +51,30 @@ public class MineSweeper extends Fragment implements
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_mine_sweeper, container, false);
-        resetButton = (ImageButton) v.findViewById(R.id.smiley_reset);
-        resetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isChronometerRunning) {
-                    timeView.stop();
-                    timeView.setBase(SystemClock.elapsedRealtime());
-                    isChronometerRunning = false;
+        Log.d(TAG, "Creating view!!");
+        if(v == null) {
+            v = inflater.inflate(R.layout.fragment_mine_sweeper, container, false);
+            resetButton = (ImageButton) v.findViewById(R.id.smiley_reset);
+            resetButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (isChronometerRunning) {
+                        timeView.stop();
+                        timeView.setBase(SystemClock.elapsedRealtime());
+                        isChronometerRunning = false;
+                    }
+                    squareBoard.removeAllViews();
+                    gameBoardArray = null;
+                    setupBoard();
                 }
-                squareBoard.removeAllViews();
-                gameBoardArray = null;
-                setupBoard();
-            }
-        });
-        squareBoard = (SquareBoard) v.findViewById(R.id.grid);
-        timeView = (Chronometer) v.findViewById(R.id.time);
-        minesLeftView = (TextView) v.findViewById(R.id.mines_left);
+            });
+            squareBoard = (SquareBoard) v.findViewById(R.id.grid);
+            timeView = (Chronometer) v.findViewById(R.id.time);
+            minesLeftView = (TextView) v.findViewById(R.id.mines_left);
 
-        buildSounds();
-        setupBoard();
+            buildSounds();
+            setupBoard();
+        }
         return v;
     }
 

@@ -89,7 +89,7 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                         Context.MODE_PRIVATE);
                 if(sharedPreferences.getBoolean(getString(R.string.tutorial), false)) {
                     getFragmentManager().beginTransaction()
-                            .replace(R.id.fragment, new Tutorial(), "MINE")
+                            .replace(R.id.fragment, new Tutorial(), "TUTORIAL")
                             .addToBackStack(null)
                             .commit();
                 } else {
@@ -108,7 +108,7 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                 break;
             case R.id.settings:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.fragment, new Settings(), "MINE")
+                        .replace(R.id.fragment, new Settings(), "SETTINGS")
                         .addToBackStack(null)
                         .commit();
                 break;
