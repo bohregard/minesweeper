@@ -93,10 +93,7 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                             .addToBackStack(null)
                             .commit();
                 } else {
-                    getFragmentManager().beginTransaction()
-                            .replace(R.id.fragment, new MineSweeper(), "MINE")
-                            .addToBackStack(null)
-                            .commit();
+                    getFragmentManager().popBackStack();
                 }
                 break;
             case R.id.achievements:

@@ -46,14 +46,27 @@ public class Main extends Activity implements
         setupGameApi();
 
         getFragmentManager().beginTransaction()
-                .replace(R.id.fragment, new MainMenu(), "MINE")
+                .add(R.id.fragment, new MineSweeper(), "MINE")
+                .commit();
+
+        getFragmentManager().beginTransaction()
+                .add(R.id.fragment, new MainMenu(), "MINE")
+                .addToBackStack(null)
                 .commit();
         setupAds();
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        Log.d(TAG, "FManager Size: " + getFragmentManager().getBackStackEntryCount());
+        if(getFragmentManager().getBackStackEntryCount() == 0) {
+            getFragmentManager().beginTransaction()
+                    .add(R.id.fragment, new MainMenu(), "MINE")
+                    .addToBackStack(null)
+                    .commit();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
