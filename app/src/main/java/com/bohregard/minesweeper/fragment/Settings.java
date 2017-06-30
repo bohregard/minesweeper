@@ -22,6 +22,7 @@ import com.bohregard.minesweeper.R;
 public class Settings extends Fragment {
 
     private static final String TAG = Settings.class.getSimpleName();
+    private SettingsListener settingsListener;
     private SharedPreferences sharedPreferences;
     private EditText boardWidth;
     private EditText boardHeight;
@@ -30,9 +31,29 @@ public class Settings extends Fragment {
 
     /*
      ******************************************************************************************
+     *   Interfaces
+     ******************************************************************************************
+     */
+
+    public interface SettingsListener {
+        void newGame();
+    }
+
+    /*
+     ******************************************************************************************
      *   Fragment Methods
      ******************************************************************************************
      */
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            settingsListener = (SettingsListener) getActivity().getFragmentManager().findFragmentByTag("MINE");
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement SsettingsListener");
+        }
+    }
 
     @Nullable
     @Override
@@ -56,28 +77,31 @@ public class Settings extends Fragment {
         gameModes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "Something");
                 Log.d(TAG, "Position: " + position);
-                sharedPreferences.edit().putInt(getString(R.string.game_mode), position).apply();
+                if(sharedPreferences.getInt(getString(R.string.game_mode), 0) != position) {
+                    sharedPreferences.edit().putInt(getString(R.string.game_mode), position).apply();
 
-                switch(position) {
-                    case 0:
-                        setHint(8, 12, 10);
-                        break;
-                    case 1:
-                        setHint(12, 18, 32);
-                        break;
-                    case 2:
-                        setHint(14, 22, 100);
-                        break;
-                    case 3:
-                        break;
-                }
+                    switch (position) {
+                        case 0:
+                            setHint(8, 12, 10);
+                            break;
+                        case 1:
+                            setHint(12, 18, 32);
+                            break;
+                        case 2:
+                            setHint(14, 22, 100);
+                            break;
+                        case 3:
+                            break;
+                    }
 
-                if(position == 3) {
-                    setCustomFocusable(true);
-                } else {
-                    setCustomFocusable(false);
+                    if (position == 3) {
+                        setCustomFocusable(true);
+                    } else {
+                        setCustomFocusable(false);
+                    }
+
+                    settingsListener.newGame();
                 }
             }
 

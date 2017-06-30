@@ -107,8 +107,9 @@ public class MainMenu extends Fragment implements View.OnClickListener {
                         Main.getGoogleApiClient()), 0);
                 break;
             case R.id.settings:
+                getFragmentManager().popBackStack();
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.fragment, new Settings(), "SETTINGS")
+                        .add(R.id.fragment, new Settings(), "SETTINGS")
                         .addToBackStack(null)
                         .commit();
                 break;

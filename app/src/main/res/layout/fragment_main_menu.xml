@@ -39,7 +39,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:text="NEW GAME"
+            android:text="RESUME GAME"
             android:textColor="@color/black"
             android:textStyle="bold" />
     </RelativeLayout>

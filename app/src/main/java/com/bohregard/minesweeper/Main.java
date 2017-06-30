@@ -32,7 +32,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 
 public class Main extends Activity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = Main.class.getSimpleName();
     private static InterstitialAd interstitialAd;
@@ -59,7 +59,7 @@ public class Main extends Activity implements
     @Override
     public void onBackPressed() {
         Log.d(TAG, "FManager Size: " + getFragmentManager().getBackStackEntryCount());
-        if(getFragmentManager().findFragmentByTag("MINE").isVisible()
+        if (getFragmentManager().findFragmentByTag("MINE").isVisible()
                 && getFragmentManager().getBackStackEntryCount() == 0) {
             getFragmentManager().beginTransaction()
                     .add(R.id.fragment, new MainMenu(), "MENU")
@@ -78,7 +78,7 @@ public class Main extends Activity implements
         Log.d(TAG, "Request Code: " + requestCode); //4 connection code?
         Log.d(TAG, "Intent Data: " + data);
         googleApiClient.connect();
-        if(resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             findViewById(R.id.sign_in_button).setVisibility(View.GONE);
             findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
             findViewById(R.id.achievements).setVisibility(View.VISIBLE);

@@ -2,16 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black_trans"
     android:orientation="vertical"
     android:padding="20dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/main_menu_margin"
+        android:background="@drawable/main_menu_button"
+        android:orientation="horizontal"
+        android:padding="@dimen/main_menu_padding">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Game Mode:" />
 
         <Spinner
@@ -25,58 +31,73 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_margin="@dimen/main_menu_margin"
+        android:background="@drawable/main_menu_button"
+        android:orientation="horizontal"
+        android:padding="@dimen/main_menu_padding">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Board Width: " />
 
         <EditText
             android:id="@+id/board_width"
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:focusable="false"
             android:hint="12"
-            android:inputType="number" />
+            android:inputType="number"
+            android:textAlignment="center" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_margin="@dimen/main_menu_margin"
+        android:background="@drawable/main_menu_button"
+        android:orientation="horizontal"
+        android:padding="@dimen/main_menu_padding">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Board Height: " />
 
         <EditText
             android:id="@+id/board_height"
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:focusable="false"
             android:hint="18"
-            android:inputType="number" />
+            android:inputType="number"
+            android:textAlignment="center" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_margin="@dimen/main_menu_margin"
+        android:background="@drawable/main_menu_button"
+        android:orientation="horizontal"
+        android:padding="@dimen/main_menu_padding">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Number of Mines: " />
 
         <EditText
             android:id="@+id/mine_number"
-            android:layout_width="wrap_content"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
             android:focusable="false"
             android:hint="32"
-            android:inputType="number" />
+            android:inputType="number"
+            android:textAlignment="center" />
     </LinearLayout>
 
 

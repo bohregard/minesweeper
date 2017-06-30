@@ -36,11 +36,13 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class MineSweeper extends Fragment implements
         View.OnClickListener,
-        View.OnLongClickListener {
+        View.OnLongClickListener,
+        Settings.SettingsListener {
 
     private static final String TAG = MineSweeper.class.getSimpleName();
     private boolean isChronometerRunning = false;
     private View v;
+    public static boolean isGameRunning = false;
 
     /*
      ******************************************************************************************
@@ -52,7 +54,8 @@ public class MineSweeper extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         Log.d(TAG, "Creating view!!");
-        if(v == null) {
+        Log.d(TAG, "Check Game Mode...");
+        if (v == null) {
             v = inflater.inflate(R.layout.fragment_mine_sweeper, container, false);
             resetButton = (ImageButton) v.findViewById(R.id.smiley_reset);
             resetButton.setOnClickListener(new View.OnClickListener() {
@@ -149,6 +152,7 @@ public class MineSweeper extends Fragment implements
      * mines set. Shuffle the mines, and calculate the board numbers.
      */
     private void setupBoard() {
+        isGameRunning = true;
         setViewBackgroundDrawable(resetButton, R.drawable.smiley_regular);
 
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
@@ -328,6 +332,7 @@ public class MineSweeper extends Fragment implements
 
     private void gameLose(int index) {
         timeView.stop();
+        isGameRunning = false;
         isChronometerRunning = false;
 
         setViewBackgroundDrawable(resetButton, R.drawable.smiley_loss);
@@ -348,6 +353,7 @@ public class MineSweeper extends Fragment implements
 
     private void gameWin() {
         timeView.stop();
+        isGameRunning = false;
         isChronometerRunning = false;
 
         achievementUnlock(R.string.achievement_a_whole_new_world);
@@ -368,11 +374,11 @@ public class MineSweeper extends Fragment implements
                 break;
             case 1:
                 leaderBoardSubmit(R.string.leaderboard_medium_mode,
-                    SystemClock.elapsedRealtime() - timeView.getBase());
+                        SystemClock.elapsedRealtime() - timeView.getBase());
                 break;
             case 2:
                 leaderBoardSubmit(R.string.leaderboard_hard_mode,
-                    SystemClock.elapsedRealtime() - timeView.getBase());
+                        SystemClock.elapsedRealtime() - timeView.getBase());
                 break;
         }
 
@@ -434,7 +440,7 @@ public class MineSweeper extends Fragment implements
 
     @Override
     public void onClick(View v) {
-        if(!isChronometerRunning) {
+        if (!isChronometerRunning) {
             timeView.setBase(SystemClock.elapsedRealtime());
             timeView.start();
             isChronometerRunning = true;
@@ -582,5 +588,18 @@ public class MineSweeper extends Fragment implements
         if (Main.getGoogleApiClient() != null && Main.getGoogleApiClient().isConnected()) {
             Games.Leaderboards.submitScore(Main.getGoogleApiClient(), getString(id), time);
         }
+    }
+
+    @Override
+    public void newGame() {
+        Log.d(TAG, "Tesst...");
+        if (isChronometerRunning) {
+            timeView.stop();
+            timeView.setBase(SystemClock.elapsedRealtime());
+            isChronometerRunning = false;
+        }
+        squareBoard.removeAllViews();
+        gameBoardArray = null;
+        setupBoard();
     }
 }
