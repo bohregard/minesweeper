@@ -1,6 +1,8 @@
 package com.bohregard.minesweeper.model
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
 data class MineSquare(
@@ -9,10 +11,11 @@ data class MineSquare(
     var nearbyMines: Int = 0
 ) {
 
-    var isClicked = mutableStateOf(false)
+    var isFlagged by mutableStateOf(false)
+    var isClicked by mutableStateOf(false)
 
     fun textColor(): Color {
-        if (!isClicked.value) {
+        if (!isClicked) {
             return Color.Gray
         }
         if (isMine) {
@@ -29,43 +32,6 @@ data class MineSquare(
             7 -> Color.Black
             8 -> Color.DarkGray
             else -> Color.White
-        }
-    }
-
-    fun findNeighbors(grid: List<MineSquare>) {
-        isClicked.value = true
-
-        val ids = mutableListOf<Int>()
-
-        val middleStart = id - 2
-        val topMiddle = id - 11
-        val bottomMiddle = id + 9
-        val middleEnd = id
-
-        when {
-            id % 10 == 1 -> {
-                ids.add(topMiddle)
-                ids.add(bottomMiddle)
-                ids.add(middleEnd)
-            }
-            id % 10 == 0 -> {
-                ids.add(middleStart)
-                ids.add(topMiddle)
-                ids.add(bottomMiddle)
-            }
-            else -> {
-                ids.add(middleStart)
-                ids.add(topMiddle)
-                ids.add(bottomMiddle)
-                ids.add(middleEnd)
-            }
-        }
-
-        ids.filter { it in 0..99 }.forEach {
-            val item = grid[it]
-            if (item.nearbyMines == 0 && !item.isMine && !item.isClicked.value) {
-                item.findNeighbors(grid)
-            }
         }
     }
 }

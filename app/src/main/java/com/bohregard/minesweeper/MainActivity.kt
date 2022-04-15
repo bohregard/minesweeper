@@ -4,14 +4,17 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.bohregard.minesweeper.model.MineSquare
+import com.bohregard.minesweeper.ui.HeaderUi
 import com.bohregard.minesweeper.ui.MinesweeperGridUi
 import com.bohregard.minesweeper.ui.theme.MinesweeperTheme
 import kotlin.random.Random
@@ -26,32 +29,38 @@ operator fun Int.plus(bool: Boolean): Int = if (bool) this + 1 else this
 
 class MainActivity : ComponentActivity() {
 
-    private val mines by lazy {
-        val ran = Random
-        IntArray(15) { ran.nextInt(1, 101) }
-    }
-
-    private val grid = (1..100).map { MineSquare(it, mines.contains(it)) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        buildGrid()
         setContent {
+            var grid by rememberSaveable { mutableStateOf(buildGrid()) }
+
             MinesweeperTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MinesweeperGridUi(grid = grid)
+                    Column {
+                        HeaderUi {
+                            grid = buildGrid()
+                        }
+                        MinesweeperGridUi(grid = grid) {
+                            // Lost the game :( Needs a reset
+                            grid.filter { it.isMine }.forEach { it.isClicked = true }
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun buildGrid() {
-        Log.d("TAG", "Numbers: ${mines.joinToString(",") { it.toString() }}")
+    private fun buildGrid(): List<MineSquare> {
+        val mines by lazy {
+            val ran = Random
+            IntArray(15) { ran.nextInt(1, 101) }
+        }
 
+        val grid = (1..100).map { MineSquare(it, mines.contains(it)) }
         grid.forEach {
             if (it.isMine) {
                 return@forEach
@@ -68,7 +77,6 @@ class MainActivity : ComponentActivity() {
             }
 
             val curId = it.id
-            Log.d("TAG", "Item Id: $curId")
 
             var topStart = curId - 12
             var middleStart = curId - 2
@@ -88,51 +96,30 @@ class MainActivity : ComponentActivity() {
                 bottomEnd = curId + 10
             }
 
-            Log.d("TAG", "Top Row Ids: $topStart, $topEnd")
             if (it.id > 10) {
-                Log.d(
-                    "TAG",
-                    "Top Row: ${grid.subList(topStart, topEnd).map { it.id }.joinToString(",")}"
-                )
-
                 grid.subList(topStart, topEnd).forEach { top ->
                     if (top.isMine) {
-                        Log.d("TAG", "Found mine at ${top.id}")
                         it.nearbyMines++
                     }
                 }
             }
-            Log.d(
-                "TAG",
-                "Middle Row: ${
-                    grid.subList(middleStart, middleEnd).map { it.id }.joinToString(",")
-                }"
-            )
-
 
             grid.subList(middleStart, middleEnd).forEach { middle ->
                 if (middle.id != curId && middle.isMine) {
-                    Log.d("TAG", "Found mine at ${middle.id}")
                     it.nearbyMines++
                 }
             }
 
             // Bottom Row
             if (it.id < 90) {
-                Log.d(
-                    "TAG",
-                    "Bottom Row: ${
-                        grid.subList(bottomStart, bottomEnd).map { it.id }.joinToString(",")
-                    }"
-                )
                 grid.subList(bottomStart, bottomEnd).forEach { bottom ->
                     if (bottom.isMine) {
-                        Log.d("TAG", "Found mine at ${bottom.id}")
                         it.nearbyMines++
                     }
                 }
             }
         }
+        return grid
     }
 }
 
